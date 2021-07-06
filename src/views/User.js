@@ -1,94 +1,130 @@
-import React, { useState, Fragment } from "react";
-import { Modal, Button, Form, Col } from "react-bootstrap";
+import React, { useState } from "react";
+import Select from "react-select";
+// react-bootstrap components
+import {
+    Button,
+    Card,
+    Form,
+    Container,
+    Row,
+    Col,
+} from "react-bootstrap";
 
+import axios from "axios";
+import { apiLocal } from "../constant";
+import { data } from "jquery";
 
-const User = ({ isHidden, isEdit, data }) => {
+function User() {
 
-    const [show, setShow] = useState(isHidden);
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const [username, setUserName] = useState("");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    const Input = ({ label, value, type }) => {
-        const [typeRequiredState, setTypeRequiredState] = useState(true);
-        const isRequired = (value) => value !== null && value !== "" && value;
-
-        const handleRequired = (e) => {
-            setTypeRequired(e.target.value);
-            if (isRequired(e.target.value)) {
-                setTypeRequiredState(true);
-            } else {
-                setTypeRequiredState(false);
-            }
-        }
-        return (
-            <Fragment>
-                <Form.Label column sm="2">
-                    {label}
-                </Form.Label>
-                <Form.Group
-                    className={
-                        typeRequiredState ? "has-success" : "has-error"
-                    }
-                >
-                    <Form.Control
-                        name="required"
-                        type={type}
-                        value={value}
-                        onChange={(e) => {
-                            handleRequired
-                        }}
-                    ></Form.Control>
-                    {typeRequiredState ? null : (
-                        <label className="error">
-                            This field is required.
-                        </label>
-                    )}
-                </Form.Group>
-            </Fragment>
-        );
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const res = await axios.post(`${apiLocal}/api/users/register`,{
+            username: username,
+            email: email,
+            name: name,
+            password: password
+        });
+        console.log(res.data)
     }
-
-    
 
     return (
         <>
-            <Fragment>
-                <Modal show={show} onHide={handleShow}>
-                    <Form onSubmit={()=>{}}>
-                        <Modal.Header closeButton={handleClose}>
-                            <Modal.Title>{isEdit === true ? "Add new user" : "User info"}</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
+            <Container fluid>
+                <Row>
+                    <Col md="12">
+                        <Form className="form-horizontal">
+                            <Card>
+                                <Card.Header>
+                                    <Card.Title as="h4">Add new user</Card.Title>
+                                </Card.Header>
+                                <Card.Body>
+                                    <Row>
+                                        <Form.Label column sm="2">
+                                            Username
+                                        </Form.Label>
+                                        <Col sm="7">
+                                            <Form.Group>
+                                                <Form.Control
+                                                    name="required"
+                                                    type="text"
+                                                    value={username}
+                                                    onChange={(e) => {
+                                                        setUserName(e.target.value);
+                                                    }}
+                                                ></Form.Control>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Form.Label column sm="2">
+                                            Name
+                                        </Form.Label>
+                                        <Col sm="7">
+                                            <Form.Group>
+                                                <Form.Control
+                                                    name="required"
+                                                    type="text"
+                                                    value={name}
+                                                    onChange={(e) => {
+                                                        setName(e.target.value)
+                                                    }}
+                                                ></Form.Control>
 
-                            <Input label="Username" type="text"></Input>
-                            <Input label="Name" type="text"></Input>
-                            <Input label="Email" type="email"></Input>
-                            <Input label="Password" type="password"></Input>
-                            <Form.Label column sm="2">
-                                Admin
-                            </Form.Label>
-                            <Form.Group>
-                                <Form.Check
-                                    type="switch"
-                                    id="custom-switch-11"
-                                    className="mb-1"
-                                />
-                            </Form.Group>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={handleClose}>
-                                Close
-                            </Button>
-                            <Button variant="primary" onClick={handleClose}>
-                                Save Changes
-                            </Button>
-                        </Modal.Footer>
-                    </Form>
-                </Modal>
-            </Fragment>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Form.Label column sm="2">
+                                            Email
+                                        </Form.Label>
+                                        <Col sm="7">
+                                            <Form.Group>
+                                                <Form.Control
+                                                    name="url"
+                                                    type="email"
+                                                    value={email}
+                                                    onChange={(e) => {
+                                                        setEmail(e.target.value);
+                                                    }}
+                                                ></Form.Control>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Form.Label column sm="2">
+                                            Password
+                                        </Form.Label>
+                                        <Col sm="7">
+                                            <Form.Group>
+                                                <Form.Control
+                                                    name="url"
+                                                    type="password"
+                                                    value={password}
+                                                    onChange={(e) => {
+                                                        setPassword(e.target.value);
+                                                    }}
+                                                ></Form.Control>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                </Card.Body>
+                                <Card.Footer className="text-center">
+                                    <Button variant="info" onClick={handleSubmit}>
+                                        Add
+                                    </Button>
+                                </Card.Footer>
+                            </Card>
+                        </Form>
+                    </Col>
+                </Row>
+            </Container>
         </>
     );
-
 }
 
 export default User;

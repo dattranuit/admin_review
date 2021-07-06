@@ -5,32 +5,28 @@ import User from "./User";
 import { apiLocal } from "constant";
 import axios from "axios";
 import NotificationAlert from "react-notification-alert";
-import UserModal from "./UserModal";
-const UserManage = () => {
+const ForumManage = () => {
 
-    const [listUser, setListUser] = useState([]);
-    const [detailUser, setDetailUser] = useState({
-        username: "",
-        name: "",
-        email: "",
-        avatar: "",
-        permission: "",
-        banned: "",
-        createdAt: "",
-    });
+    const [listDeletedThread, setListDeletedThread] = useState([]);
     const [isShow, setIsShow] = useState(false);
-    const [isShowModal, setIsShowModal] = useState(false);
+    const [listReportPost, setListReportPost] = useState([]);
 
 
-    const fetchListUser = async () => {
-        const res = await axios.get(`${apiLocal}/api/users`);
+    function extractContent(s) {
+        var span = document.createElement('span');
+        span.innerHTML = s;
+        return span.textContent || span.innerText;
+    };
+
+    const fetchListPost = async () => {
+        const res = await axios.get(`${apiLocal}/api/posts/report`);
         let tmp = res.data.map((item, key) => {
             return {
                 id: item._id,
-                username: item.username,
-                name: item.name,
-                banned: item.banned === true ? "Banned" : "Active",
-                permission: item.permission === 1 ? "Admin" : "Member",
+                reportBy: item.reported.reportedBy,
+                threadTitle: item.inThread.title,
+                content: extractContent(item.content),
+                reason: item.reported.reason,
                 actions: (
                     // we've added some custom button actions
                     <div className="actions-right">
@@ -39,15 +35,6 @@ const UserManage = () => {
                             onClick={() => {
                                 let obj = res.data.find((o) => o._id === item._id);
                                 console.log(obj);
-                                setDetailUser({
-                                    username: obj.username,
-                                    name: obj.name,
-                                    email: obj.email,
-                                    avatar: obj.avatar,
-                                    permission: obj.permission === 1 ? "Admin" : "Member",
-                                    state: obj.banned === false ? "Active" : "Banned",
-                                    createdAt: obj.createdAt,
-                                });
                             }}
                             variant="info"
                             size="sm"
@@ -59,7 +46,7 @@ const UserManage = () => {
                         <Button
                             onClick={() => {
                                 let obj = res.data.find((o) => o.id === key);
-                                
+
 
                             }}
                             variant="warning"
@@ -93,17 +80,60 @@ const UserManage = () => {
                 ),
             };
         })
-        setListUser(tmp);
+        setListReportPost(tmp);
+    }
+    const fetchListThread = async () => {
+        const res = await axios.get(`${apiLocal}/api/threads/deleted`);
+        let tmp = res.data.map((item, key) => {
+            return {
+                id: item._id,
+                threadTitle: item.title,
+                createdBy: item.byUser.username,
+                category: item.category.category,
+                replies: item.posts.length,
+                actions: (
+                    // we've added some custom button actions
+                    <div className="actions-right">
+                        {/* use this button to add a like kind of action */}
+                        <Button
+                            onClick={() => {
+                                let obj = res.data.find((o) => o._id === item._id);
+                               
+                            }}
+                            variant="info"
+                            size="sm"
+                            className="text-info btn-link like"
+                        >
+                            <i className="fa fa-eye" />
+                        </Button>{" "}
+                        {/* use this button to add a edit kind of action */}
+                        <Button
+                            onClick={() => {
+                                let obj = res.data.find((o) => o.id === key);
+
+
+                            }}
+                            variant="warning"
+                            size="sm"
+                            className="text-warning btn-link edit"
+                        >
+                            <i className="fa fa-edit" />
+                        </Button>{" "}
+                    </div>
+                ),
+            };
+        })
+        setListDeletedThread(tmp);
     }
     useEffect(() => {
-        fetchListUser();
+        fetchListThread();
+        fetchListPost();
     }, [])
 
 
     const handleSubmit = (e) => {
         e.preventDefault();
         notify(e, "tr", "info", "Hi")
-
 
     }
     const notificationAlertRef = useRef(null);
@@ -134,7 +164,6 @@ const UserManage = () => {
 
     return (
         <>
-            <UserModal detailUser={detailUser} isShow={isShowModal}/>
             <div className="rna-container">
                 <NotificationAlert ref={notificationAlertRef} />
             </div>
@@ -155,49 +184,79 @@ const UserManage = () => {
                         </Button>
                     </Col>
                 </Row>
-                {isShow === false ? <Row>
-                    <Col md="12">
-                        <Card>
-                            <Card.Header>
-                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
-                            </Card.Header>
-                            <Card.Body>
-                                <User></User>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row> : null}
                 <Row>
                     <Col md="12">
                         <Card hidden={false}>
                             <Card.Header>
-                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
+                                <Card.Title as="h4">Deleted Thread</Card.Title>
                                 <p className="card-category">
                                     Created using Montserrat Font Family
                                 </p>
                             </Card.Header>
                             <Card.Body>
                                 <ReactTable
-                                    data={listUser}
+                                    data={listDeletedThread}
                                     columns={[
                                         {
-                                            Header: "Username",
-                                            accessor: "username",
+                                            Header: "Created By",
+                                            accessor: "createdBy",
                                         },
                                         {
-                                            Header: "Name",
-                                            accessor: "name",
+                                            Header: "Thread title",
+                                            accessor: "threadTitle",
                                         },
                                         {
-                                            Header: "State",
-                                            accessor: "banned",
+                                            Header: "Category",
+                                            accessor: "category",
                                         },
                                         {
-                                            Header: "Permission",
-                                            accessor: "permission",
+                                            Header: "Replies",
+                                            accessor: "replies",
+                                        },
+                                        {
+                                            Header: "Actions",
+                                            accessor: "actions",
+                                            sortable: false,
+                                            filterable: false,
+                                        },
+                                    ]}
+                                    /*
+                                      You can choose between primary-pagination, info-pagination, success-pagination, warning-pagination, danger-pagination or none - which will make the pagination buttons gray
+                                    */
+                                    className="-striped -highlight info-pagination"
+                                />
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col md="12">
+                        <Card hidden={false}>
+                            <Card.Header>
+                                <Card.Title as="h4">Post Reported</Card.Title>
+                                <p className="card-category">
+                                    Created using Montserrat Font Family
+                                </p>
+                            </Card.Header>
+                            <Card.Body>
+                                <ReactTable
+                                    data={listReportPost}
+                                    columns={[
+                                        {
+                                            Header: "ReportBy",
+                                            accessor: "reportBy",
+                                        },
+                                        {
+                                            Header: "Thread Title",
+                                            accessor: "threadTitle",
+                                        },
+                                        {
+                                            Header: "Post content",
+                                            accessor: "content",
+                                        },
+                                        {
+                                            Header: "Reason",
+                                            accessor: "reason",
                                         },
                                         {
                                             Header: "Actions",
@@ -221,4 +280,4 @@ const UserManage = () => {
 
 }
 
-export default UserManage;
+export default ForumManage;

@@ -15,8 +15,8 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { Component } from "react";
-import { useLocation, Route, Switch } from "react-router-dom";
+import React, { useEffect, useState, } from "react";
+import { useLocation, Route, Switch, useHistory } from "react-router-dom";
 
 import AdminNavbar from "components/Navbars/AdminNavbar";
 import Footer from "components/Footer/Footer";
@@ -25,12 +25,15 @@ import Sidebar from "components/Sidebar/Sidebar";
 import routes from "routes.js";
 
 import sidebarImage from "assets/img/sidebar-3.jpg";
-
+import axios from "axios";
+import { apiLocal } from "../constant"
 function Admin() {
   const [image, setImage] = React.useState(sidebarImage);
   const [color, setColor] = React.useState("black");
   const [hasImage, setHasImage] = React.useState(true);
   const location = useLocation();
+  const [isLogin, setIsLogin] = useState(false);
+  const history = useHistory();
   const mainPanel = React.useRef(null);
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
@@ -47,6 +50,7 @@ function Admin() {
       }
     });
   };
+
   React.useEffect(() => {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
@@ -59,7 +63,22 @@ function Admin() {
       var element = document.getElementById("bodyClick");
       element.parentNode.removeChild(element);
     }
+    checkLogin();
   }, [location]);
+
+  const checkLogin = async () => {
+    const res = await axios.get(`${apiLocal}/api/users/me`, {
+      headers: {
+        'x-access-token': localStorage.getItem('x-access-token')
+      }
+    })
+    if (res.data.permission === 1) {
+      setIsLogin(true);
+    } else {
+      setIsLogin(false);
+    }
+  }
+
   return (
     <>
       <div className="wrapper">

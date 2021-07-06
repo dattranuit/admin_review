@@ -21,7 +21,7 @@ import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 //import "tributejs/dist/tribute.css";
 //mport { options } from "./options";
 
-export const FroalaEditor = () => {
+export const FroalaEditor = ({liftUp}) => {
   const ref = useRef({ editor: null });
   const [isFroalaInitialized, setIsFroalaInitialized] = useState(false);
   //const tribute = new Tribute(options);
@@ -30,6 +30,7 @@ export const FroalaEditor = () => {
 
   const handleModelChange = (model) => {
     setModel(model);
+    liftUp(model);
   };
 
   // Editor initialization
@@ -153,8 +154,6 @@ export const FroalaEditor = () => {
         }}
       />
       <br />
-      <strong>Read only editor:</strong>
-      <FroalaEditorView model={model} />
     </div>
   );
 };

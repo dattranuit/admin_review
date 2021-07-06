@@ -16,12 +16,10 @@
 
 */
 import Dashboard from "views/Dashboard.js";
-import UserProfile from "views/UserProfile.js";
-import TableList from "views/TableList.js";
-import Typography from "views/Typography.js";
 import Notifications from "views/Notifications.js";
 import SchoolManage from "views/SchoolManage.js";
 import UserManage from "views/UserManage.js";
+import ForumManage from "views/ForumManage";
 
 const dashboardRoutes = [
   {
@@ -31,27 +29,6 @@ const dashboardRoutes = [
     component: Dashboard,
     layout: "/admin",
   },
-  {
-    path: "/user",
-    name: "User Profile",
-    icon: "nc-icon nc-circle-09",
-    component: UserProfile,
-    layout: "/admin",
-  },
-  {
-    path: "/table",
-    name: "Table List",
-    icon: "nc-icon nc-notes",
-    component: TableList,
-    layout: "/admin",
-  },
-  // {
-  //   path: "/typography",
-  //   name: "Typography",
-  //   icon: "nc-icon nc-paper-2",
-  //   component: Typography,
-  //   layout: "/admin",
-  // },
   {
     path: "/notifications",
     name: "Notifications",
@@ -84,7 +61,7 @@ const dashboardRoutes = [
     path: "/threads",
     name: "Forum Manage",
     icon: "nc-icon nc-circle-09",
-    component: UserManage,
+    component: ForumManage,
     layout: "/admin",
   },
 ];

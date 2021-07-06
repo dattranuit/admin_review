@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Select from "react-select";
 // react-bootstrap components
 import {
@@ -11,43 +11,22 @@ import {
 } from "react-bootstrap";
 
 import { FroalaEditor } from "../components/Editor/FloaraEditor.js"
+import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView"
+import axios from "axios";
+import {apiLocal} from "../constant";
 
-// validators
-const emailValidation = (value) =>
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
-        value
-    );
-const urlValidation = (value) => {
-    let returnValue = true;
-    try {
-        new URL(value);
-    } catch (e) {
-        returnValue = false;
-    } finally {
-        return returnValue;
-    }
-    return false;
-};
-const equalTo = (value1, value2) => value1 === value2;
-const isRequired = (value) => value !== null && value !== "" && value;
-const isNumber = (value) => !isNaN(value) && value !== "";
-
-function School() {
-    const [typeRequired, setTypeRequired] = React.useState("");
-    const [typeRequiredState, setTypeRequiredState] = React.useState(true);
-    const [typeEmail, setTypeEmail] = React.useState("");
-    const [typeEmailState, setTypeEmailState] = React.useState(true);
-    const [typeNumber, setTypeNumber] = React.useState("");
-    const [typeNumberState, setTypeNumberState] = React.useState(true);
-    const [typeURL, setTypeURL] = React.useState("");
-    const [typeURLState, setTypeURLState] = React.useState(true);
-    const [typeEqualTo1, setTypeEqualTo1] = React.useState("");
-    const [typeEqualTo1State, setTypeEqualTo1State] = React.useState(true);
-    const [typeEqualTo2, setTypeEqualTo2] = React.useState("");
-    const [typeEqualTo2State, setTypeEqualTo2State] = React.useState(true);
-    const [singleSelect, setSingleSelect] = React.useState("");
-    const [logo, setLogo] = React.useState();
-    const [gallery, setGallery] = React.useState([])
+function School({liftUp}) {
+    const [logo, setLogo] = useState();
+    const [gallery, setGallery] = useState([]);
+    const [name, setName] = useState("");
+    const [location, setLocation] = useState("");
+    const [website, setWebsite] = useState("");
+    const [code, setCode] = useState("");
+    const [typeSchool, setTypeSchool] = useState("");
+    const [levelEdu, setLevelEdu] = useState("");
+    const [typeMajors, setTypeMajors] = useState([true, false, false, false, false, false, false])
+    const listMajors = ["Khac", "KH-KT", "XH-NV", "KT-QL", "CT-QS", "SP", "NK"]
+    const [editor, setEditor] = useState();
 
     const handleUploadLogo = (e) => {
         if (e.target.files[0])
@@ -58,17 +37,71 @@ function School() {
         if (e.target.files[0])
             setGallery([...gallery, e.target.files[0]])
     }
+
+    const handleCheck = (index) =>{
+        const newValue = [...typeMajors];
+        newValue[index] = !newValue[index];
+        setTypeMajors(newValue);
+    }
+    const handleEditor = (e) =>{
+        setEditor(e);
+    }
+
+    const clearAllFields = () =>{
+        setLogo();
+        setGallery([]);
+        setName("");
+        setLocation("");
+        setWebsite("");
+        setCode("");
+        setTypeSchool("");
+        setLevelEdu("");
+        setTypeMajors([true, false, false, false, false, false, false]);
+        setEditor();
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        const tmpMajor = [];
+        typeMajors.map((item, index) => {
+            if (item === true)
+                tmpMajor.push(index);
+        });
+        const formData = new FormData();
+        formData.append('logo', logo)
+        formData.append('typeOfSchool', typeSchool.value)
+        formData.append('level', levelEdu.value)
+        formData.append('typeOfMajor', JSON.stringify(tmpMajor))
+        formData.append('code', code)
+        formData.append('name', name)
+        formData.append('location', location)
+        formData.append('website', website)
+        formData.append('description', editor)
+        gallery.map((item, index) =>{
+            formData.append('gallery', item)
+        })
+        const res = await axios.post(`${apiLocal}/api/schools`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        if (res.status === 200){
+            alert("Create school succesful");
+            liftUp();
+            clearAllFields();
+        } else {
+            alert("Error");
+        }
+    }
+
+
     return (
         <>
             <Container fluid>
                 <Row>
                     <Col md="12">
-                        <Form
-                            action=""
-                            className="form-horizontal"
-                            id="TypeValidation"
-                            method=""
-                        >
+                        <Form className="form-horizontal">
                             <Card>
                                 <Card.Header>
                                     <Card.Title as="h4">School Information</Card.Title>
@@ -79,29 +112,16 @@ function School() {
                                             Name
                                         </Form.Label>
                                         <Col sm="7">
-                                            <Form.Group
-                                                className={
-                                                    typeRequiredState ? "has-success" : "has-error"
-                                                }
-                                            >
+                                            <Form.Group>
                                                 <Form.Control
                                                     name="required"
                                                     type="text"
-                                                    value={typeRequired}
+                                                    value={name}
                                                     onChange={(e) => {
-                                                        setTypeRequired(e.target.value);
-                                                        if (isRequired(e.target.value)) {
-                                                            setTypeRequiredState(true);
-                                                        } else {
-                                                            setTypeRequiredState(false);
-                                                        }
+                                                        setName(e.target.value);
                                                     }}
                                                 ></Form.Control>
-                                                {typeRequiredState ? null : (
-                                                    <label className="error">
-                                                        This field is required.
-                                                    </label>
-                                                )}
+
                                             </Form.Group>
                                         </Col>
                                     </Row>
@@ -110,29 +130,16 @@ function School() {
                                             Location
                                         </Form.Label>
                                         <Col sm="7">
-                                            <Form.Group
-                                                className={
-                                                    typeRequiredState ? "has-success" : "has-error"
-                                                }
-                                            >
+                                            <Form.Group>
                                                 <Form.Control
                                                     name="required"
                                                     type="text"
-                                                    value={typeRequired}
+                                                    value={location}
                                                     onChange={(e) => {
-                                                        setTypeRequired(e.target.value);
-                                                        if (isRequired(e.target.value)) {
-                                                            setTypeRequiredState(true);
-                                                        } else {
-                                                            setTypeRequiredState(false);
-                                                        }
+                                                        setLocation(e.target.value)
                                                     }}
                                                 ></Form.Control>
-                                                {typeRequiredState ? null : (
-                                                    <label className="error">
-                                                        This field is required.
-                                                    </label>
-                                                )}
+
                                             </Form.Group>
                                         </Col>
                                     </Row>
@@ -141,155 +148,107 @@ function School() {
                                             Website
                                         </Form.Label>
                                         <Col sm="4">
-                                            <Form.Group
-                                                className={typeURLState ? "has-success" : "has-error"}
-                                            >
+                                            <Form.Group>
                                                 <Form.Control
                                                     name="url"
                                                     type="text"
-                                                    value={typeURL}
+                                                    value={website}
                                                     onChange={(e) => {
-                                                        setTypeURL(e.target.value);
-                                                        if (urlValidation(e.target.value)) {
-                                                            setTypeURLState(true);
-                                                        } else {
-                                                            setTypeURLState(false);
-                                                        }
+                                                        setWebsite(e.target.value);
                                                     }}
                                                 ></Form.Control>
-                                                {typeURLState ? null : (
-                                                    <label className="error">
-                                                        This field is required to be a valid URL.
-                                                    </label>
-                                                )}
-                                            </Form.Group>
-                                        </Col>
-                                        <Form.Label column sm="2">
-                                            Mã trường
-                                        </Form.Label>
-                                        <Col sm="4">
-                                            <Form.Group
-                                                className={typeURLState ? "has-success" : "has-error"}
-                                            >
-                                                <Form.Control
-                                                    name="url"
-                                                    type="text"
-                                                    value={typeURL}
-                                                    onChange={(e) => {
-                                                        setTypeURL(e.target.value);
-                                                        if (urlValidation(e.target.value)) {
-                                                            setTypeURLState(true);
-                                                        } else {
-                                                            setTypeURLState(false);
-                                                        }
-                                                    }}
-                                                ></Form.Control>
-                                                {typeURLState ? null : (
-                                                    <label className="error">
-                                                        This field is required to be a valid URL.
-                                                    </label>
-                                                )}
                                             </Form.Group>
                                         </Col>
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Equal to
+                                            School Code
                                         </Form.Label>
                                         <Col sm="4">
-                                            <Form.Group
-                                                className={
-                                                    typeEqualTo2State ? "has-success" : "has-error"
-                                                }
-                                            >
+                                            <Form.Group>
+                                                <Form.Control
+                                                    name="code"
+                                                    type="text"
+                                                    value={code}
+                                                    onChange={(e) => {
+                                                        setCode(e.target.value);
+                                                    }}
+                                                ></Form.Control>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Form.Label column sm="2">
+                                            School Info
+                                        </Form.Label>
+                                        <Col sm="4">
+                                            <Form.Group>
                                                 <Select
                                                     className="react-select primary"
                                                     classNamePrefix="react-select"
                                                     name="singleSelect"
-                                                    value={singleSelect}
-                                                    onChange={(value) => setSingleSelect(value)}
+                                                    value={typeSchool}
+                                                    onChange={(value) => setTypeSchool(value)}
                                                     options={[
-                                                        {
-                                                            value: "",
-                                                            label: "Single Option",
-                                                            isDisabled: true,
-                                                        },
-                                                        { value: "2", label: "Foobar" },
-                                                        { value: "3", label: "Is great" },
+                                                        // {
+                                                        //     value: "",
+                                                        //     label: "Chon 1 gia tri",
+                                                        //     isDisabled: true,
+                                                        // },
+                                                        { value: 0, label: "Khac" },
+                                                        { value: 1, label: "Cong lap" },
+                                                        { value: 2, label: "Dan lap" },
+                                                        { value: 3, label: "Ban cong" },
                                                     ]}
                                                     placeholder="Loại trường"
                                                 />
-                                                {singleSelect ? null : (
-                                                    <label className="error">
-                                                        This field is required to be equal to the left one.
-                                                    </label>
-                                                )}
                                             </Form.Group>
                                         </Col>
                                         <Col sm="4">
-                                            <Form.Group
-                                                className={
-                                                    typeEqualTo2State ? "has-success" : "has-error"
-                                                }
-                                            >
+                                            <Form.Group>
                                                 <Select
                                                     className="react-select primary"
                                                     classNamePrefix="react-select"
                                                     name="singleSelect"
-                                                    value={singleSelect}
-                                                    onChange={(value) => setSingleSelect(value)}
+                                                    value={levelEdu}
+                                                    onChange={(value) => setLevelEdu(value)}
                                                     options={[
-                                                        {
-                                                            value: "",
-                                                            label: "Single Option",
-                                                            isDisabled: true,
-                                                        },
-                                                        { value: "2", label: "Foobar" },
-                                                        { value: "3", label: "Is great" },
+                                                        // {
+                                                        //     value: "",
+                                                        //     label: "Single Option",
+                                                        //     isDisabled: true,
+                                                        // },
+                                                        { value: 0, label: "Khac" },
+                                                        { value: 1, label: "Dai hoc" },
+                                                        { value: 2, label: "Cao dang" },
+                                                        { value: 3, label: "Trung cap" },
                                                     ]}
                                                     placeholder="Trình độ đào tạo"
                                                 />
-                                                {singleSelect ? null : (
-                                                    <label className="error">
-                                                        This field is required to be equal to the left one.
-                                                    </label>
-                                                )}
+
                                             </Form.Group>
                                         </Col>
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Equal to
                                         </Form.Label>
-                                        <Col sm="10">
-                                            <Form.Check className="checkbox-inline">
-                                                <Form.Check.Label>
-                                                    <Form.Check.Input
-                                                        defaultValue="option1"
-                                                        type="checkbox"
-                                                    ></Form.Check.Input>
-                                                    <span className="form-check-sign">KHTN-KT</span>
-                                                </Form.Check.Label>
-                                            </Form.Check>
-                                            <Form.Check className="checkbox-inline">
-                                                <Form.Check.Label>
-                                                    <Form.Check.Input
-                                                        defaultValue="option2"
-                                                        type="checkbox"
-                                                    ></Form.Check.Input>
-                                                    <span className="form-check-sign">KHXH</span>b
-                                                </Form.Check.Label>
-                                            </Form.Check>
-                                            <Form.Check className="checkbox-inline">
-                                                <Form.Check.Label>
-                                                    <Form.Check.Input
-                                                        defaultValue="option3"
-                                                        type="checkbox"
-                                                    ></Form.Check.Input>
-                                                    <span className="form-check-sign">KTTC</span>
-                                                </Form.Check.Label>
-                                            </Form.Check>
-                                        </Col>
+                                        {listMajors.map((item, index) => (
+                                            <Col>
+                                                <Form.Group className="pull-left">
+                                                    <Form.Check>
+                                                        <Form.Check.Label>
+                                                            <Form.Check.Input
+                                                                type="checkbox"
+                                                                checked={typeMajors[index]}
+                                                                onClick={() => handleCheck(index)}
+                                                            ></Form.Check.Input>
+                                                            <span className="form-check-sign"></span>
+                                                            {item}
+                                                        </Form.Check.Label>
+                                                    </Form.Check>
+                                                </Form.Group>
+                                            </Col>
+                                        ))}
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
@@ -300,7 +259,6 @@ function School() {
                                             <Form.File required id="logo" onChange={handleUploadLogo} />
                                         </Form.Group>
                                     </Row>
-
                                     <Row>
                                         <Form.Label column sm="2">
                                             Gallery
@@ -318,43 +276,14 @@ function School() {
                                         <Form.Label column sm="2">
                                             Miêu tả
                                         </Form.Label>
-                                        <FroalaEditor />
+                                        <FroalaEditor liftUp={handleEditor}/>
+                                    </Row>
+                                    <Row>
+                                        <FroalaEditorView/>
                                     </Row>
                                 </Card.Body>
                                 <Card.Footer className="text-center">
-                                    <Button
-                                        variant="info"
-                                        onClick={() => {
-                                            if (!typeRequiredState || !isRequired(typeRequired)) {
-                                                setTypeRequiredState(false);
-                                            } else {
-                                                setTypeRequiredState(true);
-                                            }
-                                            if (!typeEmailState || !emailValidation(typeEmail)) {
-                                                setTypeEmailState(false);
-                                            } else {
-                                                setTypeEmailState(true);
-                                            }
-                                            if (!typeNumberState || !isNumber(typeNumber)) {
-                                                setTypeNumberState(false);
-                                            } else {
-                                                setTypeNumberState(true);
-                                            }
-                                            if (!typeURLState || !urlValidation(typeURL)) {
-                                                setTypeURLState(false);
-                                            } else {
-                                                setTypeURLState(true);
-                                            }
-                                            if (
-                                                !typeEqualTo2State ||
-                                                !equalTo(typeEqualTo1, typeEqualTo2)
-                                            ) {
-                                                setTypeEqualTo2State(false);
-                                            } else {
-                                                setTypeEqualTo2State(true);
-                                            }
-                                        }}
-                                    >
+                                    <Button variant="info" onClick={handleSubmit}>
                                         Submit
                                     </Button>
                                 </Card.Footer>

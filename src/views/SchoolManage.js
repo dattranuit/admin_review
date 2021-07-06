@@ -1,19 +1,31 @@
 import React, { useState, useEffect } from "react";
-
 import { Button, Card, Container, Row, Col, } from "react-bootstrap";
 import ReactTable from "components/ReactTable/ReactTable.js";
 import School from "./School";
 import axios from "axios";
 import { apiLocal } from "constant";
+import SchoolModal from "./SchoolModal";
+
 const SchoolManage = () => {
 
     const [listSchool, setListSchool] = useState([]);
+    const [detailSchool, setDetailSchool] = useState({
+        name: "",
+        code: "",
+        logo: "",
+        location: "",
+        description: "",
+        gallery: [],
+        levelEdu: "",
+    });
+    const [showDetails, setShowDetails] = useState(false);
 
-    const fetchListSchool = async () =>{
+    const fetchListSchool = async () => {
         const res = await axios.get(`${apiLocal}/api/schools`);
         let tmp = res.data.map((item, key) => {
             return {
                 id: key,
+                _id: item._id,
                 code: item.code,
                 name: item.name,
                 location: item.location,
@@ -24,18 +36,22 @@ const SchoolManage = () => {
                         {/* use this button to add a like kind of action */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === key);
-                                alert(
-                                    "You've clicked LIKE button on \n{ \nName: " +
-                                    obj.username +
-                                    ", \nposition: " +
-                                    obj.name +
-                                    ", \noffice: " +
-                                    obj.createAt +
-                                    ", \nage: " +
-                                    obj.permission +
-                                    "\n}."
-                                );
+                                setShowDetails(true);
+                                let obj = res.data.find((o) => o._id === item._id);
+                                //console.log(obj);
+                                const convertLevel = ["Khác", "Công lập", "Dân lập", "Bán công"]
+                                const convertType = ["Khác", "Đại học", "Cao đẳng", "Trung cấp"]
+                                setDetailSchool({
+                                    name: obj.name,
+                                    code: obj.code,
+                                    logo: obj.logo,
+                                    location: obj.location,
+                                    description: obj.description,
+                                    gallery: obj.images,
+                                    levelEdu: convertLevel[obj.level],
+                                    typeOfSchool: convertType[obj.typeOfSchool],
+                                    website: obj.website
+                                });
                             }}
                             variant="info"
                             size="sm"
@@ -48,15 +64,7 @@ const SchoolManage = () => {
                             onClick={() => {
                                 let obj = res.data.find((o) => o.id === key);
                                 alert(
-                                    "You've clicked LIKE button on \n{ \nName: " +
-                                    obj.username +
-                                    ", \nposition: " +
-                                    obj.name +
-                                    ", \noffice: " +
-                                    obj.createAt +
-                                    ", \nage: " +
-                                    obj.permission +
-                                    "\n}."
+
                                 );
                             }}
                             variant="warning"
@@ -93,13 +101,18 @@ const SchoolManage = () => {
         setListSchool(tmp);
     }
 
-    useEffect(()=>{
+    const handleLiftUp = () => {
         fetchListSchool();
-    },[])
+    }
 
-    const [hide, setHide] = useState(false);
+    useEffect(() => {
+        fetchListSchool();
+    }, [])
+
+    const [hide, setHide] = useState(true);
     return (
         <>
+            <SchoolModal detailSchool={detailSchool} isShow={showDetails}/>
             <Container fluid>
                 <Row>
                     <Col />
@@ -111,30 +124,30 @@ const SchoolManage = () => {
                             className="btn-fill pull-right"
                             type="submit"
                             variant="info"
-                            onClick={() => setHide(false)}
+                            onClick={() => setHide(!hide)}
                         >
                             New School
                         </Button>
                     </Col>
                 </Row>
-                <Row>
+                {hide === false ? <Row>
                     <Col md="12">
                         <Card>
                             <Card.Header>
-                            <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
+                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
                                 <p className="card-category">
                                     Created using Montserrat Font Family
                                 </p>
                             </Card.Header>
                             <Card.Body>
-                               <School></School>
+                                <School liftUp={handleLiftUp}></School>
                             </Card.Body>
                         </Card>
                     </Col>
-                </Row>
+                </Row> : null}
                 <Row>
                     <Col md="12">
-                        <Card hidden={hide}>
+                        <Card>
                             <Card.Header>
                                 <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
                                 <p className="card-category">
