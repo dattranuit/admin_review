@@ -281,6 +281,7 @@ function School({liftUp}) {
                                     <Row>
                                         <FroalaEditorView/>
                                     </Row>
+                                    
                                 </Card.Body>
                                 <Card.Footer className="text-center">
                                     <Button variant="info" onClick={handleSubmit}>

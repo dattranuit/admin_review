@@ -5,12 +5,29 @@ import User from "./User";
 import { apiLocal } from "constant";
 import axios from "axios";
 import NotificationAlert from "react-notification-alert";
+import SweetAlert from "react-bootstrap-sweetalert";
 const ForumManage = () => {
 
     const [listDeletedThread, setListDeletedThread] = useState([]);
     const [isShow, setIsShow] = useState(false);
     const [listReportPost, setListReportPost] = useState([]);
+    const [alertWaring, setAlertWarning] = React.useState(false);
+    const [confirmAlert, setConfirmAlert] = useState(false);
 
+    const warningWithConfirmMessage = () => {
+        setAlertWarning(true);
+    };
+
+    const successDelete = () => {
+        setAlertWarning(false);
+        setConfirmAlert(true);
+    };
+    const hideAlertWarn = () => {
+        setAlertWarning(false);
+    };
+    const hideConfirm = () => {
+        setConfirmAlert(false);
+    }
 
     function extractContent(s) {
         var span = document.createElement('span');
@@ -31,22 +48,11 @@ const ForumManage = () => {
                     // we've added some custom button actions
                     <div className="actions-right">
                         {/* use this button to add a like kind of action */}
-                        <Button
-                            onClick={() => {
-                                let obj = res.data.find((o) => o._id === item._id);
-                                console.log(obj);
-                            }}
-                            variant="info"
-                            size="sm"
-                            className="text-info btn-link like"
-                        >
-                            <i className="fa fa-eye" />
-                        </Button>{" "}
                         {/* use this button to add a edit kind of action */}
                         <Button
                             onClick={() => {
                                 let obj = res.data.find((o) => o.id === key);
-
+                                warningWithConfirmMessage()
 
                             }}
                             variant="warning"
@@ -56,26 +62,6 @@ const ForumManage = () => {
                             <i className="fa fa-edit" />
                         </Button>{" "}
                         {/* use this button to remove the data row */}
-                        <Button
-                            onClick={() => {
-                                var newData = res.data;
-                                newData.find((o, i) => {
-                                    if (o.id === key) {
-                                        // here you should add some custom code so you can delete the data
-                                        // from this component and from your server as well
-                                        newData.splice(i, 1);
-                                        return true;
-                                    }
-                                    return false;
-                                });
-                                setData([...newData]);
-                            }}
-                            variant="danger"
-                            size="sm"
-                            className="btn-link remove text-danger"
-                        >
-                            <i className="fa fa-times" />
-                        </Button>{" "}
                     </div>
                 ),
             };
@@ -94,23 +80,11 @@ const ForumManage = () => {
                 actions: (
                     // we've added some custom button actions
                     <div className="actions-right">
-                        {/* use this button to add a like kind of action */}
-                        <Button
-                            onClick={() => {
-                                let obj = res.data.find((o) => o._id === item._id);
-                               
-                            }}
-                            variant="info"
-                            size="sm"
-                            className="text-info btn-link like"
-                        >
-                            <i className="fa fa-eye" />
-                        </Button>{" "}
                         {/* use this button to add a edit kind of action */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === key);
-
+                                let obj = res.data.find((o) => o.id === item._id);
+                                warningWithConfirmMessage();
 
                             }}
                             variant="warning"
@@ -164,6 +138,30 @@ const ForumManage = () => {
 
     return (
         <>
+            {alertWaring && <SweetAlert
+                warning
+                style={{ display: "block", marginTop: "100px" }}
+                title="Are you sure?"
+                onConfirm={() => successDelete()}
+                onCancel={() => hideAlertWarn()}
+                confirmBtnBsStyle="info"
+                cancelBtnBsStyle="danger"
+                confirmBtnText="Yes, delete it!"
+                cancelBtnText="Cancel"
+                showCancel
+            >
+                You will not be able to recover this school.
+            </SweetAlert>}
+            {confirmAlert && <SweetAlert
+                success
+                style={{ display: "block", marginTop: "100px" }}
+                title="Deleted!"
+                onConfirm={() => hideConfirm()}
+                onCancel={() => hideConfirm()}
+                confirmBtnBsStyle="info"
+            >
+                School has been deleted.
+            </SweetAlert>}
             <div className="rna-container">
                 <NotificationAlert ref={notificationAlertRef} />
             </div>

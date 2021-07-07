@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { Button, Card, Container, Row, Col, } from "react-bootstrap";
+import React, { useState, useEffect, useRef } from "react";
+import { Button, Card, Container, Row, Col, Modal, Form } from "react-bootstrap";
 import ReactTable from "components/ReactTable/ReactTable.js";
+import Select from "react-select";
 import School from "./School";
 import axios from "axios";
 import { apiLocal } from "constant";
-import SchoolModal from "./SchoolModal";
-
+import SchoolModalEdit from "./SchoolModal";
+import SweetAlert from "react-bootstrap-sweetalert";
+import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView"
+import { FroalaEditor } from "../components/Editor/FloaraEditor.js"
 const SchoolManage = () => {
 
     const [listSchool, setListSchool] = useState([]);
@@ -18,7 +21,35 @@ const SchoolManage = () => {
         gallery: [],
         levelEdu: "",
     });
-    const [showDetails, setShowDetails] = useState(false);
+    const [alertWaring, setAlertWarning] = React.useState(false);
+    const [confirmAlert, setConfirmAlert] = useState(false);
+    const [hide, setHide] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+
+
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+
+    const [showEdit, setShowEdit] = useState(false);
+    const handleCloseEdit = () => setShowEdit(false);
+    const handleShowEdit = () => setShowEdit(true);
+
+    const warningWithConfirmMessage = () => {
+        setAlertWarning(true);
+    };
+
+    const successDelete = () => {
+        setAlertWarning(false);
+        setConfirmAlert(true);
+    };
+    const hideAlertWarn = () => {
+        setAlertWarning(false);
+    };
+    const hideConfirm = () => {
+        setConfirmAlert(false);
+    }
 
     const fetchListSchool = async () => {
         const res = await axios.get(`${apiLocal}/api/schools`);
@@ -36,11 +67,13 @@ const SchoolManage = () => {
                         {/* use this button to add a like kind of action */}
                         <Button
                             onClick={() => {
-                                setShowDetails(true);
+                                //setShowDetails(true);
+                                handleShow(true);
                                 let obj = res.data.find((o) => o._id === item._id);
+                                //console.log(obj)
                                 //console.log(obj);
-                                const convertLevel = ["Khác", "Công lập", "Dân lập", "Bán công"]
-                                const convertType = ["Khác", "Đại học", "Cao đẳng", "Trung cấp"]
+                                const convertType = ["Khác", "Công lập", "Dân lập", "Bán công"]
+                                const convertLevel = ["Khác", "Đại học", "Cao đẳng", "Trung cấp"]
                                 setDetailSchool({
                                     name: obj.name,
                                     code: obj.code,
@@ -62,10 +95,27 @@ const SchoolManage = () => {
                         {/* use this button to add a edit kind of action */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === key);
-                                alert(
-
-                                );
+                                let obj = res.data.find((o) => o._id === item._id);
+                                //console.log(obj)
+                                const convertType = ["Khác", "Công lập", "Dân lập", "Bán công"]
+                                const convertLevel = ["Khác", "Đại học", "Cao đẳng", "Trung cấp"]
+                                const majors = Array(7).fill(false);
+                                obj.typeOfMajor.map((item, index) =>{majors[item] = true})
+                                setDetailSchool({
+                                    name: obj.name,
+                                    code: obj.code,
+                                    logo: obj.logo,
+                                    location: obj.location,
+                                    description: obj.description,
+                                    gallery: obj.images,
+                                    levelEdu: {value: obj.level, label: convertLevel[obj.level] },
+                                    typeOfSchool: {value: obj.typeOfSchool, label: convertType[obj.typeOfSchool]},
+                                    typeMajors: majors,
+                                    website: obj.website
+                                });
+                                setShowEdit(true);
+                                //setShowModal(true);
+                               // handleClick();
                             }}
                             variant="warning"
                             size="sm"
@@ -76,17 +126,8 @@ const SchoolManage = () => {
                         {/* use this button to remove the data row */}
                         <Button
                             onClick={() => {
-                                var newData = res.data;
-                                newData.find((o, i) => {
-                                    if (o.id === key) {
-                                        // here you should add some custom code so you can delete the data
-                                        // from this component and from your server as well
-                                        newData.splice(i, 1);
-                                        return true;
-                                    }
-                                    return false;
-                                });
-                                setData([...newData]);
+                                let obj = res.data.find((o) => o._id === item._id);
+                                warningWithConfirmMessage();
                             }}
                             variant="danger"
                             size="sm"
@@ -101,6 +142,427 @@ const SchoolManage = () => {
         setListSchool(tmp);
     }
 
+    const SchoolModal = ({ detailSchool }) => {
+        return (
+            <>
+                <Modal scrollable={true} size="lg" show={show} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        School Information
+                    </Modal.Header>
+
+                    <Modal.Body>
+                        <Row>
+                            <Col md="12">
+                                <Form className="form-horizontal">
+                                    <Card>
+                                        <Card.Header>
+                                            <Card.Title as="h4"></Card.Title>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    Name
+                                                </Form.Label>
+                                                <Col sm="7">
+                                                    <Form.Group>
+                                                        <Form.Control
+                                                            readOnly
+                                                            name="required"
+                                                            type="text"
+                                                            value={detailSchool.name}
+                                                        ></Form.Control>
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    Location
+                                                </Form.Label>
+                                                <Col sm="7">
+                                                    <Form.Group>
+                                                        <Form.Control
+                                                            readOnly
+                                                            name="required"
+                                                            type="text"
+                                                            value={detailSchool.location}
+                                                        ></Form.Control>
+
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    Website
+                                                </Form.Label>
+                                                <Col sm="4">
+                                                    <Form.Group>
+                                                        <Form.Control
+                                                            readOnly
+                                                            name="url"
+                                                            type="text"
+                                                            value={detailSchool.website}
+                                                        ></Form.Control>
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    School Code
+                                                </Form.Label>
+                                                <Col sm="4">
+                                                    <Form.Group>
+                                                        <Form.Control
+                                                            readOnly
+                                                            name="code"
+                                                            type="text"
+                                                            value={detailSchool.code}
+                                                        ></Form.Control>
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    School Info
+                                                </Form.Label>
+                                                <Col sm="4">
+                                                    <Form.Group>
+                                                        <Form.Control
+                                                            readOnly
+                                                            name="url"
+                                                            type="text"
+                                                            value={detailSchool.typeOfSchool}
+                                                        ></Form.Control>
+                                                    </Form.Group>
+                                                </Col>
+                                                <Col sm="4">
+                                                    <Form.Group>
+                                                        <Form.Control
+                                                            readOnly
+                                                            name="url"
+                                                            type="text"
+                                                            value={detailSchool.levelEdu}
+                                                        ></Form.Control>
+
+                                                    </Form.Group>
+                                                </Col>
+                                            </Row>
+
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    Logo
+                                                </Form.Label>
+                                                <Form.Group>
+                                                    {detailSchool.logo !== undefined ? <img style={{ width: 100, height: 100 }} src={detailSchool.logo} alt="logo" /> : null}
+
+                                                </Form.Group>
+                                            </Row>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    Gallery
+                                                </Form.Label>
+                                                <Form.Group>
+                                                    {detailSchool.gallery.length > 0 ? detailSchool.gallery.map((item, index) => (
+                                                        <div style={{ display: "inline-block" }}>
+                                                            <img style={{ width: 100, height: 100, margin: 5 }} src={item} alt="a" />
+                                                        </div>
+                                                    )) : null}
+
+                                                </Form.Group>
+                                            </Row>
+                                            <Row>
+                                                <Form.Label column sm="2">
+                                                    Miêu tả
+                                                </Form.Label>
+                                                <FroalaEditorView model={detailSchool.description} />
+                                            </Row>
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                        </Card.Footer>
+                                    </Card>
+                                </Form>
+                            </Col>
+                        </Row>
+                    </Modal.Body>
+                    <Modal.Footer>
+                    </Modal.Footer>
+                </Modal>
+            
+            </>
+        );
+    }
+
+    const SchoolModalEdit = ({ detailSchool }) => {
+        //console.log(detailSchool)
+        const [logo, setLogo] = useState(detailSchool.logo);
+        const [gallery, setGallery] = useState(detailSchool.gallery);
+        const [name, setName] = useState(detailSchool.name);
+        const [location, setLocation] = useState(detailSchool.location);
+        const [website, setWebsite] = useState(detailSchool.website);
+        const [code, setCode] = useState(detailSchool.code);
+        const [typeSchool, setTypeSchool] = useState(detailSchool.typeOfSchool);
+        const [levelEdu, setLevelEdu] = useState(detailSchool.levelEdu);
+        const [typeMajors, setTypeMajors] = useState(detailSchool.typeMajors || [true, false, false, false, false, false, false])
+        const listMajors = ["Khac", "KH-KT", "XH-NV", "KT-QL", "CT-QS", "SP", "NK"]
+        const [editor, setEditor] = useState(detailSchool.description);
+
+        const handleUploadLogo = (e) => {
+            if (e.target.files[0])
+                setLogo(e.target.files[0]);
+        }
+
+        const handleUploadGallery = (e) => {
+            if (e.target.files[0])
+                setGallery([...gallery, e.target.files[0]])
+        }
+
+        const handleCheck = (index) => {
+            const newValue = [...typeMajors];
+            newValue[index] = !newValue[index];
+            setTypeMajors(newValue);
+        }
+        const handleEditor = (e) => {
+            //console.log(e);
+            setEditor(e);
+        }
+
+        const clearAllFields = () => {
+            setLogo();
+            setGallery([]);
+            setName("");
+            setLocation("");
+            setWebsite("");
+            setCode("");
+            setTypeSchool("");
+            setLevelEdu("");
+            setTypeMajors([true, false, false, false, false, false, false]);
+            setEditor();
+        }
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+
+            const tmpMajor = [];
+            typeMajors.map((item, index) => {
+                if (item === true)
+                    tmpMajor.push(index);
+            });
+            const formData = new FormData();
+            formData.append('logo', logo)
+            formData.append('typeOfSchool', typeSchool.value)
+            formData.append('level', levelEdu.value)
+            formData.append('typeOfMajor', JSON.stringify(tmpMajor))
+            formData.append('code', code)
+            formData.append('name', name)
+            formData.append('location', location)
+            formData.append('website', website)
+            formData.append('description', editor)
+            gallery.map((item, index) => {
+                formData.append('gallery', item)
+            })
+            const res = await axios.post(`${apiLocal}/api/schools`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (res.status === 200) {
+                alert("Create school succesful");
+                liftUp();
+                clearAllFields();
+            } else {
+                alert("Error");
+            }
+        }
+
+        return (
+            <>
+                <Modal scrollable={true} size="xl" show={showEdit} onHide={handleCloseEdit}>
+                    <Modal.Header closeButton>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Row>
+                            <Form.Label column sm="2">
+                                Name
+                            </Form.Label>
+                            <Col sm="7">
+                                <Form.Group>
+                                    <Form.Control
+                                        name="required"
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => {
+                                            setName(e.target.value);
+                                        }}
+                                    ></Form.Control>
+
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                Location
+                            </Form.Label>
+                            <Col sm="7">
+                                <Form.Group>
+                                    <Form.Control
+                                        name="required"
+                                        type="text"
+                                        value={location}
+                                        onChange={(e) => {
+                                            setLocation(e.target.value)
+                                        }}
+                                    ></Form.Control>
+
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                Website
+                            </Form.Label>
+                            <Col sm="4">
+                                <Form.Group>
+                                    <Form.Control
+                                        name="url"
+                                        type="text"
+                                        value={website}
+                                        onChange={(e) => {
+                                            setWebsite(e.target.value);
+                                        }}
+                                    ></Form.Control>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                School Code
+                            </Form.Label>
+                            <Col sm="4">
+                                <Form.Group>
+                                    <Form.Control
+                                        name="code"
+                                        type="text"
+                                        value={code}
+                                        onChange={(e) => {
+                                            setCode(e.target.value);
+                                        }}
+                                    ></Form.Control>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                School Info
+                            </Form.Label>
+                            <Col sm="4">
+                                <Form.Group>
+                                    <Select
+                                        className="react-select primary"
+                                        classNamePrefix="react-select"
+                                        name="singleSelect1"
+                                        value={typeSchool}
+                                        defaultValue={typeSchool}
+                                        onChange={(value) => setTypeSchool(value)}
+                                        options={[
+                                            // {
+                                            //     value: "",
+                                            //     label: "Chon 1 gia tri",
+                                            //     isDisabled: true,
+                                            // },
+                                            { value: 0, label: "Khac" },
+                                            { value: 1, label: "Cong lap" },
+                                            { value: 2, label: "Dan lap" },
+                                            { value: 3, label: "Ban cong" },
+                                        ]}
+                                        placeholder="Loại trường"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col sm="4">
+                                <Form.Group>
+                                    <Select
+                                        className="react-select primary"
+                                        classNamePrefix="react-select"
+                                        name="singleSelect2"
+                                        value={levelEdu}
+                                        defaultValue={levelEdu}
+                                        onChange={(value) => setLevelEdu(value)}
+                                        options={[
+                                            // {
+                                            //     value: "",
+                                            //     label: "Single Option",
+                                            //     isDisabled: true,
+                                            // },
+                                            { value: 0, label: "Khac" },
+                                            { value: 1, label: "Dai hoc" },
+                                            { value: 2, label: "Cao dang" },
+                                            { value: 3, label: "Trung cap" },
+                                        ]}
+                                        placeholder="Trình độ đào tạo"
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                            </Form.Label>
+                            {listMajors.map((item, index) => (
+                                <Col>
+                                    <Form.Group className="pull-left">
+                                        <Form.Check>
+                                            <Form.Check.Label>
+                                                <Form.Check.Input
+                                                    type="checkbox"
+                                                    checked={typeMajors[index]}
+                                                    onClick={() => handleCheck(index)}
+                                                ></Form.Check.Input>
+                                                <span className="form-check-sign"></span>
+                                                {item}
+                                            </Form.Check.Label>
+                                        </Form.Check>
+                                    </Form.Group>
+                                </Col>
+                            ))}
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                Logo
+                            </Form.Label>
+                            <Form.Group>
+                                {logo !== undefined ? <img style={{ width: 100, height: 100 }} src={logo} alt="logo" /> : null}
+                                <Form.File required id="logo" onChange={handleUploadLogo} />
+                            </Form.Group>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                Gallery
+                            </Form.Label>
+                            <Form.Group>
+                                {gallery.length > 0 ? gallery.map((item, index) => (
+                                    <div style={{ display: "inline-block" }}>
+                                        <img style={{ width: 100, height: 100, margin: 5 }} src={item} alt="image" />
+                                    </div>
+                                )) : null}
+                                <Form.File id="gallery" onChange={handleUploadGallery} />
+                            </Form.Group>
+                        </Row>
+                        <Row>
+                            <Form.Label column sm="2">
+                                Miêu tả
+                            </Form.Label>
+                            <FroalaEditor liftUp={handleEditor} defaultValue={detailSchool.description}/>
+                        </Row>
+                        <Row>
+                            <FroalaEditorView />
+                        </Row>
+
+                    </Modal.Body>
+                    <Modal.Footer>
+                    </Modal.Footer>
+                </Modal>
+            </>
+        );
+    }
+
     const handleLiftUp = () => {
         fetchListSchool();
     }
@@ -109,89 +571,114 @@ const SchoolManage = () => {
         fetchListSchool();
     }, [])
 
-    const [hide, setHide] = useState(true);
+
     return (
         <>
-            <SchoolModal detailSchool={detailSchool} isShow={showDetails}/>
+            {alertWaring && <SweetAlert
+                warning
+                style={{ display: "block", marginTop: "100px" }}
+                title="Are you sure?"
+                onConfirm={() => successDelete()}
+                onCancel={() => hideAlertWarn()}
+                confirmBtnBsStyle="info"
+                cancelBtnBsStyle="danger"
+                confirmBtnText="Yes, delete it!"
+                cancelBtnText="Cancel"
+                showCancel
+            >
+                You will not be able to recover this school.
+            </SweetAlert>}
+            {confirmAlert && <SweetAlert
+                success
+                style={{ display: "block", marginTop: "100px" }}
+                title="Deleted!"
+                onConfirm={() => hideConfirm()}
+                onCancel={() => hideConfirm()}
+                confirmBtnBsStyle="info"
+            >
+                School has been deleted.
+            </SweetAlert>}
+            <SchoolModalEdit detailSchool= {detailSchool}/>
+            <SchoolModal detailSchool={detailSchool}/>
             <Container fluid>
-                <Row>
-                    <Col />
-                    <Col />
-                    <Col />
-                    <Col>
-                        <Button
-                            style={{ float: "right", marginBottom: 10 }}
-                            className="btn-fill pull-right"
-                            type="submit"
-                            variant="info"
-                            onClick={() => setHide(!hide)}
-                        >
-                            New School
-                        </Button>
-                    </Col>
-                </Row>
-                {hide === false ? <Row>
-                    <Col md="12">
-                        <Card>
-                            <Card.Header>
-                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
-                            </Card.Header>
-                            <Card.Body>
-                                <School liftUp={handleLiftUp}></School>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row> : null}
-                <Row>
-                    <Col md="12">
-                        <Card>
-                            <Card.Header>
-                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
-                            </Card.Header>
-                            <Card.Body>
-                                <ReactTable
-                                    data={listSchool}
-                                    columns={[
-                                        {
-                                            Header: "Code",
-                                            accessor: "code",
-                                        },
-                                        {
-                                            Header: "Name",
-                                            accessor: "name",
-                                        },
-                                        {
-                                            Header: "Location",
-                                            accessor: "location",
-                                        },
-                                        {
-                                            Header: "Website",
-                                            accessor: "website",
-                                        },
-                                        {
-                                            Header: "Actions",
-                                            accessor: "actions",
-                                            sortable: false,
-                                            filterable: false,
-                                        },
-                                    ]}
-                                    /*
-                                      You can choose between primary-pagination, info-pagination, success-pagination, warning-pagination, danger-pagination or none - which will make the pagination buttons gray
-                                    */
-                                    className="-striped -highlight primary-pagination"
-                                />
-                            </Card.Body>
-                        </Card>
+            <Row>
+                <Col />
+                <Col />
+                <Col />
+                <Col>
+                    <Button
+                        style={{ float: "right", marginBottom: 10 }}
+                        className="btn-fill pull-right"
+                        type="submit"
+                        variant="info"
+                        onClick={() => setHide(!hide)}
+                    >
+                        New School
+                    </Button>
+                </Col>
+            </Row>
+            {hide === false ? <Row>
+                <Col md="12">
+                    <Card>
+                        <Card.Header>
+                            <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
+                            <p className="card-category">
+                                Created using Montserrat Font Family
+                            </p>
+                        </Card.Header>
+                        <Card.Body>
+                            <School liftUp={handleLiftUp}></School>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row> : null}
+            <Row>
+                <Col md="12">
+                    <Card>
+                        <Card.Header>
+                            <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
+                            <p className="card-category">
+                                Created using Montserrat Font Family
+                            </p>
+                        </Card.Header>
+                        <Card.Body>
+                            <ReactTable
+                                data={listSchool}
+                                columns={[
+                                    {
+                                        Header: "Code",
+                                        accessor: "code",
+                                    },
+                                    {
+                                        Header: "Name",
+                                        accessor: "name",
+                                    },
+                                    {
+                                        Header: "Location",
+                                        accessor: "location",
+                                    },
+                                    {
+                                        Header: "Website",
+                                        accessor: "website",
+                                    },
+                                    {
+                                        Header: "Actions",
+                                        accessor: "actions",
+                                        sortable: false,
+                                        filterable: false,
+                                    },
+                                ]}
+                                /*
+                                  You can choose between primary-pagination, info-pagination, success-pagination, warning-pagination, danger-pagination or none - which will make the pagination buttons gray
+                                */
+                                className="-striped -highlight primary-pagination"
+                            />
+                        </Card.Body>
+                    </Card>
 
-                    </Col>
-                </Row>
-            </Container>
+                </Col>
+            </Row>
+        </Container>
         </>
     );
 }

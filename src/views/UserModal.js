@@ -13,14 +13,14 @@ import {
 import axios from "axios";
 import { apiLocal } from "../constant";
 
-function UserModal({detailUser, isShow}) {
+function UserModal({detailUser}) {
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     return (
         <>
-            <Modal scrollable={true} size="lg" show={false} onHide={handleClose}>
+            <Modal scrollable={true} size="lg" show={true} onHide={handleClose}>
                 <Modal.Header closeButton>
                 </Modal.Header>
                 <Modal.Body>

@@ -21,12 +21,12 @@ import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView";
 //import "tributejs/dist/tribute.css";
 //mport { options } from "./options";
 
-export const FroalaEditor = ({liftUp}) => {
+export const FroalaEditor = ({liftUp, defaultValue}) => {
   const ref = useRef({ editor: null });
   const [isFroalaInitialized, setIsFroalaInitialized] = useState(false);
   //const tribute = new Tribute(options);
   const [editor, setEditor] = useState(undefined);
-  const [model, setModel] = useState("");
+  const [model, setModel] = useState(defaultValue);
 
   const handleModelChange = (model) => {
     setModel(model);
