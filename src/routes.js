@@ -15,51 +15,36 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import Dashboard from "views/Dashboard.js";
-import Notifications from "views/Notifications.js";
+import ReviewManage from "views/ReviewManage";
 import SchoolManage from "views/SchoolManage.js";
 import UserManage from "views/UserManage.js";
 import ForumManage from "views/ForumManage";
 
 const dashboardRoutes = [
   {
-    path: "/dashboard",
-    name: "Dashboard",
+    path: "/review",
+    name:"Quản lý review",
     icon: "nc-icon nc-chart-pie-35",
-    component: Dashboard,
-    layout: "/admin",
-  },
-  {
-    path: "/notifications",
-    name: "Notifications",
-    icon: "nc-icon nc-bell-55",
-    component: Notifications,
+    component: ReviewManage,
     layout: "/admin",
   },
   {
     path: "/schools",
-    name: "School Manage",
+    name: "Quản lý trường",
     icon: "nc-icon nc-bank",
     component: SchoolManage,
     layout: "/admin",
   },
   {
     path: "/users",
-    name: "User Manage",
-    icon: "nc-icon nc-circle-09",
-    component: UserManage,
-    layout: "/admin",
-  },
-  {
-    path: "/reviews",
-    name: "Review Manage",
+    name: "Quản lý người dùng",
     icon: "nc-icon nc-circle-09",
     component: UserManage,
     layout: "/admin",
   },
   {
     path: "/threads",
-    name: "Forum Manage",
+    name: "Quản lý forum",
     icon: "nc-icon nc-circle-09",
     component: ForumManage,
     layout: "/admin",

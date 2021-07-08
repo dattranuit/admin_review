@@ -5,7 +5,6 @@ import User from "./User";
 import { apiLocal } from "constant";
 import axios from "axios";
 import NotificationAlert from "react-notification-alert";
-import UserModal from "./UserModal";
 import SweetAlert from "react-bootstrap-sweetalert";
 const UserManage = () => {
 
@@ -26,12 +25,13 @@ const UserManage = () => {
     const [showEdit, setShowEdit] = useState(false);
     const handleCloseEdit = () => setShowEdit(false);
     const handleShowEdit = () => setShowEdit(true);
+    const [stateUser, setStateUser] = useState(false);
 
     const warningWithConfirmMessage = () => {
         setAlertWarning(true);
     };
 
-    const successDelete = () => {
+    const successDelete = async () => {
         setAlertWarning(false);
         setConfirmAlert(true);
     };
@@ -79,8 +79,17 @@ const UserManage = () => {
                         {/* use this button to add a edit kind of action */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === item._id);
+                                let obj = res.data.find((o) => o._id === item._id);
                                 handleShowEdit(true);
+                                setDetailUser({
+                                    username: obj.username,
+                                    name: obj.name,
+                                    email: obj.email,
+                                    // avatar: obj.avatar,
+                                    // permission: obj.permission === 1 ? "Admin" : "Member",
+                                    // state: obj.banned === false ? "Active" : "Banned",
+                                    // createdAt: obj.createdAt,
+                                });
 
                             }}
                             variant="warning"
@@ -92,8 +101,13 @@ const UserManage = () => {
                         {/* use this button to remove the data row */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === item._id);
+                                let obj = res.data.find((o) => o._id === item._id);
                                 warningWithConfirmMessage();
+                                if(obj.banned === false){
+                                    setStateUser(false);
+                                } else {
+                                    setStateUser(true);
+                                }
                             }}
                             variant="danger"
                             size="sm"
@@ -389,21 +403,20 @@ const UserManage = () => {
                 onCancel={() => hideAlertWarn()}
                 confirmBtnBsStyle="info"
                 cancelBtnBsStyle="danger"
-                confirmBtnText="Yes, delete it!"
+                confirmBtnText={stateUser === false?"Yes, ban it!":"Yes, unban it!"}
                 cancelBtnText="Cancel"
                 showCancel
             >
-                You will not be able to recover this user.
             </SweetAlert>}
             {confirmAlert && <SweetAlert
                 success
                 style={{ display: "block", marginTop: "100px" }}
-                title="Deleted!"
+                title={stateUser === false?"Banned":"Unbanned"}
                 onConfirm={() => hideConfirm()}
                 onCancel={() => hideConfirm()}
                 confirmBtnBsStyle="info"
             >
-                User has been deleted.
+                {stateUser === false?"User has been banned!":"User has been unbanned!"}
             </SweetAlert>}
             <UserModal detailUser={detailUser} />
             <UserEdit detailUser={detailUser} />
@@ -423,7 +436,7 @@ const UserManage = () => {
                             variant="info"
                             onClick={() => { setIsShow(!isShow); }}
                         >
-                            New User
+                            Thêm người dùng
                         </Button>
                     </Col>
                 </Row>
@@ -431,10 +444,6 @@ const UserManage = () => {
                     <Col md="12">
                         <Card>
                             <Card.Header>
-                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
                             </Card.Header>
                             <Card.Body>
                                 <User></User>
@@ -446,10 +455,6 @@ const UserManage = () => {
                     <Col md="12">
                         <Card hidden={false}>
                             <Card.Header>
-                                <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
                             </Card.Header>
                             <Card.Body>
                                 <ReactTable
@@ -460,19 +465,19 @@ const UserManage = () => {
                                             accessor: "username",
                                         },
                                         {
-                                            Header: "Name",
+                                            Header: "Tên",
                                             accessor: "name",
                                         },
                                         {
-                                            Header: "State",
+                                            Header: "Trạng thái",
                                             accessor: "banned",
                                         },
                                         {
-                                            Header: "Permission",
+                                            Header: "Quyền hạn",
                                             accessor: "permission",
                                         },
                                         {
-                                            Header: "Actions",
+                                            Header: "Hành động",
                                             accessor: "actions",
                                             sortable: false,
                                             filterable: false,

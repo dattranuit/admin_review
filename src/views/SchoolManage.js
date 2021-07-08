@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Card, Container, Row, Col, Modal, Form } from "react-bootstrap";
 import ReactTable from "components/ReactTable/ReactTable.js";
 import Select from "react-select";
 import School from "./School";
 import axios from "axios";
 import { apiLocal } from "constant";
-import SchoolModalEdit from "./SchoolModal";
 import SweetAlert from "react-bootstrap-sweetalert";
 import FroalaEditorView from "react-froala-wysiwyg/FroalaEditorView"
 import { FroalaEditor } from "../components/Editor/FloaraEditor.js"
@@ -381,7 +380,7 @@ const SchoolManage = () => {
                     <Modal.Body>
                         <Row>
                             <Form.Label column sm="2">
-                                Name
+                                Tên trường
                             </Form.Label>
                             <Col sm="7">
                                 <Form.Group>
@@ -399,7 +398,7 @@ const SchoolManage = () => {
                         </Row>
                         <Row>
                             <Form.Label column sm="2">
-                                Location
+                                Địa chỉ
                             </Form.Label>
                             <Col sm="7">
                                 <Form.Group>
@@ -434,7 +433,7 @@ const SchoolManage = () => {
                         </Row>
                         <Row>
                             <Form.Label column sm="2">
-                                School Code
+                                Mã trường
                             </Form.Label>
                             <Col sm="4">
                                 <Form.Group>
@@ -451,7 +450,7 @@ const SchoolManage = () => {
                         </Row>
                         <Row>
                             <Form.Label column sm="2">
-                                School Info
+                                Thông tin trường
                             </Form.Label>
                             <Col sm="4">
                                 <Form.Group>
@@ -534,7 +533,7 @@ const SchoolManage = () => {
                         </Row>
                         <Row>
                             <Form.Label column sm="2">
-                                Gallery
+                                Ảnh
                             </Form.Label>
                             <Form.Group>
                                 {gallery.length > 0 ? gallery.map((item, index) => (
@@ -613,7 +612,7 @@ const SchoolManage = () => {
                         variant="info"
                         onClick={() => setHide(!hide)}
                     >
-                        New School
+                        Thêm trường
                     </Button>
                 </Col>
             </Row>
@@ -621,10 +620,6 @@ const SchoolManage = () => {
                 <Col md="12">
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                            <p className="card-category">
-                                Created using Montserrat Font Family
-                            </p>
                         </Card.Header>
                         <Card.Body>
                             <School liftUp={handleLiftUp}></School>
@@ -636,25 +631,21 @@ const SchoolManage = () => {
                 <Col md="12">
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h4">Light Bootstrap Table Heading</Card.Title>
-                            <p className="card-category">
-                                Created using Montserrat Font Family
-                            </p>
                         </Card.Header>
                         <Card.Body>
                             <ReactTable
                                 data={listSchool}
                                 columns={[
                                     {
-                                        Header: "Code",
+                                        Header: "Mã trường",
                                         accessor: "code",
                                     },
                                     {
-                                        Header: "Name",
+                                        Header: "Tên trường",
                                         accessor: "name",
                                     },
                                     {
-                                        Header: "Location",
+                                        Header: "Vị trí",
                                         accessor: "location",
                                     },
                                     {
@@ -662,7 +653,7 @@ const SchoolManage = () => {
                                         accessor: "website",
                                     },
                                     {
-                                        Header: "Actions",
+                                        Header: "Hành động",
                                         accessor: "actions",
                                         sortable: false,
                                         filterable: false,

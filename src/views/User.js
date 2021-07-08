@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Select from "react-select";
+import React, { useState , useRef} from "react";
+
 // react-bootstrap components
 import {
     Button,
@@ -12,14 +12,45 @@ import {
 
 import axios from "axios";
 import { apiLocal } from "../constant";
-import { data } from "jquery";
+import NotificationAlert from "react-notification-alert"
 
-function User() {
+const User = () => {
 
     const [username, setUserName] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const clearAllFields = () =>{
+        setUserName("");
+        setName("");
+        setEmail("");
+        setPassword("");
+    }
+    const notificationAlertRef = useRef(null);
+    const notify = (e, place, type, content) => {
+        e.preventDefault();
+        // type = "primary";
+        // type = "success";
+        // type = "danger";
+        // type = "warning";
+        // type = "info";
+        var options = {};
+        options = {
+            place: place,
+            message: (
+                <div>
+                    <div>
+                        {content}
+                    </div>
+                </div>
+            ),
+            type: type,
+            icon: "nc-icon nc-bell-55",
+            autoDismiss: 3,
+        };
+        notificationAlertRef.current.notificationAlert(options);
+
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,18 +60,26 @@ function User() {
             name: name,
             password: password
         });
-        console.log(res.data)
+        if (res.data.msg === "Success"){
+            notify(e, "tr", "success", "Create account successful");
+            clearAllFields();
+        } else {
+            notify(e, "tr", "warning", res.data.msg);
+        }
     }
 
     return (
         <>
+        <div className="rna-container">
+                <NotificationAlert ref={notificationAlertRef} />
+            </div>
             <Container fluid>
                 <Row>
                     <Col md="12">
                         <Form className="form-horizontal">
                             <Card>
                                 <Card.Header>
-                                    <Card.Title as="h4">Add new user</Card.Title>
+                                    <Card.Title as="h4">Thêm người dùng mới</Card.Title>
                                 </Card.Header>
                                 <Card.Body>
                                     <Row>
@@ -62,7 +101,7 @@ function User() {
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Name
+                                            Tên
                                         </Form.Label>
                                         <Col sm="7">
                                             <Form.Group>
@@ -97,7 +136,7 @@ function User() {
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Password
+                                            Mật khẩu
                                         </Form.Label>
                                         <Col sm="7">
                                             <Form.Group>
@@ -115,7 +154,7 @@ function User() {
                                 </Card.Body>
                                 <Card.Footer className="text-center">
                                     <Button variant="info" onClick={handleSubmit}>
-                                        Add
+                                        Thêm
                                     </Button>
                                 </Card.Footer>
                             </Card>

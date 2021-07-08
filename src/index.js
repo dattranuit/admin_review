@@ -28,14 +28,12 @@ import "./assets/css/demo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import AdminLayout from "layouts/Admin.js";
-import LoginPage from "views/Login";
 
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
       <Route path="/admin" render={(props) => <AdminLayout {...props} />} />
       {/* <Redirect from="/" to="/login" /> */}
-      <Route path="/login" component ={LoginPage}/>
     </Switch>
   </BrowserRouter>,
   document.getElementById("root")

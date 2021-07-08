@@ -25,7 +25,7 @@ function School({liftUp}) {
     const [typeSchool, setTypeSchool] = useState("");
     const [levelEdu, setLevelEdu] = useState("");
     const [typeMajors, setTypeMajors] = useState([true, false, false, false, false, false, false])
-    const listMajors = ["Khac", "KH-KT", "XH-NV", "KT-QL", "CT-QS", "SP", "NK"]
+    const listMajors = ["Khác", "Khoa học - Kỹ thuật", "Xã hội - Nhân văn", "Kinh tế-Quản lý", "Chính trị -Quân sự", "Sư phạm", "Năng khiếu"]
     const [editor, setEditor] = useState();
 
     const handleUploadLogo = (e) => {
@@ -57,7 +57,7 @@ function School({liftUp}) {
         setTypeSchool("");
         setLevelEdu("");
         setTypeMajors([true, false, false, false, false, false, false]);
-        setEditor();
+        setEditor("");
     }
 
     const handleSubmit = async (e) => {
@@ -68,6 +68,7 @@ function School({liftUp}) {
             if (item === true)
                 tmpMajor.push(index);
         });
+        //console.log(tmpMajor);
         const formData = new FormData();
         formData.append('logo', logo)
         formData.append('typeOfSchool', typeSchool.value)
@@ -104,12 +105,12 @@ function School({liftUp}) {
                         <Form className="form-horizontal">
                             <Card>
                                 <Card.Header>
-                                    <Card.Title as="h4">School Information</Card.Title>
+                                    <Card.Title as="h4">Thêm trường mới</Card.Title>
                                 </Card.Header>
                                 <Card.Body>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Name
+                                            Tên trường
                                         </Form.Label>
                                         <Col sm="7">
                                             <Form.Group>
@@ -127,7 +128,7 @@ function School({liftUp}) {
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Location
+                                            Vị trí
                                         </Form.Label>
                                         <Col sm="7">
                                             <Form.Group>
@@ -147,7 +148,7 @@ function School({liftUp}) {
                                         <Form.Label column sm="2">
                                             Website
                                         </Form.Label>
-                                        <Col sm="4">
+                                        <Col sm="7">
                                             <Form.Group>
                                                 <Form.Control
                                                     name="url"
@@ -162,9 +163,9 @@ function School({liftUp}) {
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            School Code
+                                            Mã trường
                                         </Form.Label>
-                                        <Col sm="4">
+                                        <Col sm="7">
                                             <Form.Group>
                                                 <Form.Control
                                                     name="code"
@@ -179,7 +180,7 @@ function School({liftUp}) {
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            School Info
+                                            Thông tin trường
                                         </Form.Label>
                                         <Col sm="4">
                                             <Form.Group>
@@ -195,10 +196,10 @@ function School({liftUp}) {
                                                         //     label: "Chon 1 gia tri",
                                                         //     isDisabled: true,
                                                         // },
-                                                        { value: 0, label: "Khac" },
-                                                        { value: 1, label: "Cong lap" },
-                                                        { value: 2, label: "Dan lap" },
-                                                        { value: 3, label: "Ban cong" },
+                                                        { value: 0, label: "Khác" },
+                                                        { value: 1, label: "Công lập" },
+                                                        { value: 2, label: "Dân lập" },
+                                                        { value: 3, label: "Bán công" },
                                                     ]}
                                                     placeholder="Loại trường"
                                                 />
@@ -218,10 +219,10 @@ function School({liftUp}) {
                                                         //     label: "Single Option",
                                                         //     isDisabled: true,
                                                         // },
-                                                        { value: 0, label: "Khac" },
-                                                        { value: 1, label: "Dai hoc" },
-                                                        { value: 2, label: "Cao dang" },
-                                                        { value: 3, label: "Trung cap" },
+                                                        { value: 0, label: "Khác" },
+                                                        { value: 1, label: "Đại học" },
+                                                        { value: 2, label: "Cao đẳng" },
+                                                        { value: 3, label: "Trung cấp" },
                                                     ]}
                                                     placeholder="Trình độ đào tạo"
                                                 />
@@ -261,7 +262,7 @@ function School({liftUp}) {
                                     </Row>
                                     <Row>
                                         <Form.Label column sm="2">
-                                            Gallery
+                                            Ảnh
                                         </Form.Label>
                                         <Form.Group>
                                             {gallery.length > 0 ? gallery.map((item, index) => (
@@ -285,7 +286,7 @@ function School({liftUp}) {
                                 </Card.Body>
                                 <Card.Footer className="text-center">
                                     <Button variant="info" onClick={handleSubmit}>
-                                        Submit
+                                        Thêm
                                     </Button>
                                 </Card.Footer>
                             </Card>

@@ -1,7 +1,6 @@
-import React, { useEffect, useState, Fragment, useRef } from "react"
-import { Button, Card, Container, Row, Col, Modal, Form } from "react-bootstrap";
+import React, { useEffect, useState, useRef } from "react"
+import { Button, Card, Container, Row, Col } from "react-bootstrap";
 import ReactTable from "components/ReactTable/ReactTable.js";
-import User from "./User";
 import { apiLocal } from "constant";
 import axios from "axios";
 import NotificationAlert from "react-notification-alert";
@@ -14,19 +13,60 @@ const ForumManage = () => {
     const [alertWaring, setAlertWarning] = React.useState(false);
     const [confirmAlert, setConfirmAlert] = useState(false);
 
+    const [alertWaringPost, setAlertWarningPost] = React.useState(false);
+    const [confirmAlertPost, setConfirmAlertPost] = useState(false);
+
+    const [stateThread, setStateThread] = useState(false);
+    const [statePostChoose, setStatePostChoose] = useState(false);
+
+    const [idThread, setIdThread] = useState("");
+    const [idPost, setIdPost] = useState("");
+
     const warningWithConfirmMessage = () => {
         setAlertWarning(true);
     };
 
-    const successDelete = () => {
+    const successDelete = async () => {
         setAlertWarning(false);
         setConfirmAlert(true);
+        const res = await axios.post(`${apiLocal}/api/threads/${idThread}/undeleted`, {},
+            {
+                headers: { "x-access-token": localStorage.getItem('x-access-token') }
+            });
     };
     const hideAlertWarn = () => {
         setAlertWarning(false);
     };
     const hideConfirm = () => {
         setConfirmAlert(false);
+    }
+
+    // For post
+    const warningWithConfirmMessagePost = () => {
+        setAlertWarningPost(true);
+    };
+
+    const successDeletePost = async () => {
+        setAlertWarningPost(false);
+        setConfirmAlertPost(true);
+        if (statePostChoose === true) {
+            const res = await axios.delete(`${apiLocal}/api/posts/${idPost}`,
+                {
+                    headers: { "x-access-token": localStorage.getItem('x-access-token') }
+                });
+        } else {
+            const res = await axios.post(`${apiLocal}/api/posts/${idPost}/decline`, {},
+            {
+                headers: { "x-access-token": localStorage.getItem('x-access-token') }
+            });
+        }
+
+    };
+    const hideAlertWarnPost = () => {
+        setAlertWarningPost(false);
+    };
+    const hideConfirmPost = () => {
+        setConfirmAlertPost(false);
     }
 
     function extractContent(s) {
@@ -51,8 +91,10 @@ const ForumManage = () => {
                         {/* use this button to add a edit kind of action */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === key);
-                                warningWithConfirmMessage()
+                                let obj = res.data.find((o) => o._id === item._id);
+                                setStatePostChoose(true);
+                                warningWithConfirmMessagePost();
+                                setIdPost(obj._id)
 
                             }}
                             variant="warning"
@@ -62,6 +104,20 @@ const ForumManage = () => {
                             <i className="fa fa-edit" />
                         </Button>{" "}
                         {/* use this button to remove the data row */}
+                        <Button
+                            onClick={() => {
+                                let obj = res.data.find((o) => o._id === item._id);
+                                setStatePostChoose(false);
+                                warningWithConfirmMessagePost();
+                                setIdPost(obj._id)
+
+                            }}
+                            variant="danger"
+                            size="sm"
+                            className="btn-link remove text-danger"
+                        >
+                            <i className="fa fa-times" />
+                        </Button>{" "}
                     </div>
                 ),
             };
@@ -83,9 +139,11 @@ const ForumManage = () => {
                         {/* use this button to add a edit kind of action */}
                         <Button
                             onClick={() => {
-                                let obj = res.data.find((o) => o.id === item._id);
+                                let obj = res.data.find((o) => o._id === item._id);
+                                //console.log(obj._id)
+                                setIdThread(obj._id)
                                 warningWithConfirmMessage();
-
+                                setStateThread(true);
                             }}
                             variant="warning"
                             size="sm"
@@ -141,27 +199,51 @@ const ForumManage = () => {
             {alertWaring && <SweetAlert
                 warning
                 style={{ display: "block", marginTop: "100px" }}
-                title="Are you sure?"
+                title="Khôi phục thread?"
                 onConfirm={() => successDelete()}
                 onCancel={() => hideAlertWarn()}
                 confirmBtnBsStyle="info"
                 cancelBtnBsStyle="danger"
-                confirmBtnText="Yes, delete it!"
-                cancelBtnText="Cancel"
+                confirmBtnText="Khôi phục"
+                cancelBtnText="Hủy"
                 showCancel
             >
-                You will not be able to recover this school.
             </SweetAlert>}
             {confirmAlert && <SweetAlert
                 success
                 style={{ display: "block", marginTop: "100px" }}
-                title="Deleted!"
+                title="Hoàn thành"
                 onConfirm={() => hideConfirm()}
                 onCancel={() => hideConfirm()}
                 confirmBtnBsStyle="info"
             >
-                School has been deleted.
+                Thread đã được khôi phục
             </SweetAlert>}
+
+            {alertWaringPost && <SweetAlert
+                warning
+                style={{ display: "block", marginTop: "100px" }}
+                title={statePostChoose === true ? "Xoá post này?" : "Xóa báo cáo này?"}
+                onConfirm={() => successDeletePost()}
+                onCancel={() => hideAlertWarnPost()}
+                confirmBtnBsStyle="info"
+                cancelBtnBsStyle="danger"
+                confirmBtnText="Xóa"
+                cancelBtnText="Hủy"
+                showCancel
+            >
+            </SweetAlert>}
+            {confirmAlertPost && <SweetAlert
+                success
+                style={{ display: "block", marginTop: "100px" }}
+                title="Hoàn thành"
+                onConfirm={() => hideConfirmPost()}
+                onCancel={() => hideConfirmPost()}
+                confirmBtnBsStyle="info"
+            >
+                {statePostChoose === true ? "Post đã được xóa." : "Đã xóa báo cáo."}
+            </SweetAlert>}
+
             <div className="rna-container">
                 <NotificationAlert ref={notificationAlertRef} />
             </div>
@@ -170,49 +252,37 @@ const ForumManage = () => {
                     <Col />
                     <Col />
                     <Col />
-                    <Col>
-                        <Button
-                            style={{ float: "right", marginBottom: 10 }}
-                            className="btn-fill pull-right"
-                            type="submit"
-                            variant="info"
-                            onClick={() => { setIsShow(!isShow); }}
-                        >
-                            New User
-                        </Button>
-                    </Col>
+                    <Col />
+                    <Col />
                 </Row>
                 <Row>
                     <Col md="12">
                         <Card hidden={false}>
                             <Card.Header>
-                                <Card.Title as="h4">Deleted Thread</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
+                                <Card.Title as="h4">Thread đã xóa</Card.Title>
                             </Card.Header>
                             <Card.Body>
                                 <ReactTable
                                     data={listDeletedThread}
                                     columns={[
                                         {
-                                            Header: "Created By",
+                                            Header: "Tạo bởi",
                                             accessor: "createdBy",
                                         },
                                         {
-                                            Header: "Thread title",
+                                            Header: "Tiêu đề",
                                             accessor: "threadTitle",
                                         },
                                         {
-                                            Header: "Category",
+                                            Header: "Thể loại",
                                             accessor: "category",
                                         },
                                         {
-                                            Header: "Replies",
+                                            Header: "Phản hồi",
                                             accessor: "replies",
                                         },
                                         {
-                                            Header: "Actions",
+                                            Header: "Hành động",
                                             accessor: "actions",
                                             sortable: false,
                                             filterable: false,
@@ -231,29 +301,26 @@ const ForumManage = () => {
                     <Col md="12">
                         <Card hidden={false}>
                             <Card.Header>
-                                <Card.Title as="h4">Post Reported</Card.Title>
-                                <p className="card-category">
-                                    Created using Montserrat Font Family
-                                </p>
+                                <Card.Title as="h4">Báo cáo đang chờ</Card.Title>
                             </Card.Header>
                             <Card.Body>
                                 <ReactTable
                                     data={listReportPost}
                                     columns={[
                                         {
-                                            Header: "ReportBy",
+                                            Header: "Người báo cáo",
                                             accessor: "reportBy",
                                         },
                                         {
-                                            Header: "Thread Title",
+                                            Header: "Tiêu đề",
                                             accessor: "threadTitle",
                                         },
                                         {
-                                            Header: "Post content",
+                                            Header: "Nội dung post",
                                             accessor: "content",
                                         },
                                         {
-                                            Header: "Reason",
+                                            Header: "Lý do",
                                             accessor: "reason",
                                         },
                                         {
