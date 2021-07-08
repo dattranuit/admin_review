@@ -1,11 +1,17 @@
-import Reat from "react";
 import { Link } from "react-router-dom";
-const LayoutReview = ({ item, index }) => {
-  const removeReport = () => {
-    Promise.all([axios.get(`${apiLocal}/api/reviews`)])
-      .then(([listReview]) => {
-        setData(listReview.data);
-        setLoading(false);
+import React, { useEffect, useState, useRef } from "react";
+import { apiLocal } from "constant";
+import axios from "axios";
+import NotificationAlert from "react-notification-alert";
+import * as loadingIcon from "react-loading-icons";
+import $ from "jquery";
+const LayoutReview = ({ item, index, setSuccess, success }) => {
+  const removeReport = (id) => {
+    $(`#review-${id}`).removeClass("hidden");
+    Promise.all([axios.post(`${apiLocal}/api/reviews/${id}/decline-report`)])
+      .then(() => {
+        setSuccess(success + 1);
+        $(`#review-${id}`).addClass("hidden");
       })
       .catch();
   };
@@ -31,6 +37,7 @@ const LayoutReview = ({ item, index }) => {
           Lượt vote : {item.rateValue.up.count - item.rateValue.down.count || 0}
         </p>
         <p style={{ flex: 1 }}>Số bình luận : {item.comments || 0}</p>
+        <p style={{ flex: 1 }}>Số lượt tố cáo : {item.report.count || 0}</p>
       </div>
       <div style={{ display: "flex" }}>
         <a
@@ -42,17 +49,26 @@ const LayoutReview = ({ item, index }) => {
         <div
           style={{
             background: "#b0b3b8",
-            width: "10px",
+            width: "1px",
             height: "24px",
             margin: " 0 20px",
           }}
         ></div>
-        <p
-          onClick={removeReport}
-          style={{ cursor: "pointer", color: "#faa405" }}
-        >
-          Từ chối tố cáo
-        </p>
+        <div style={{ display: "flex" }}>
+          <p
+            onClick={() => removeReport(item._id)}
+            style={{ cursor: "pointer", color: "#faa405", marginRight: "6px" }}
+          >
+            Từ chối tố cáo
+          </p>
+          <div id={`review-${item._id}`} className="hidden">
+            <loadingIcon.ThreeDots
+              fill="#faa405"
+              width="24"
+              height="24"
+            ></loadingIcon.ThreeDots>
+          </div>
+        </div>
       </div>
     </div>
   );
