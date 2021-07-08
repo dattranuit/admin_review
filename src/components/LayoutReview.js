@@ -11,7 +11,7 @@ const LayoutReview = ({ item, index, setSuccess, success }) => {
     Promise.all([axios.post(`${apiLocal}/api/reviews/${id}/decline-report`)])
       .then(() => {
         setSuccess(success + 1);
-        $(`review-${id}`).addClass("hidden");
+        $(`#review-${id}`).addClass("hidden");
       })
       .catch();
   };
