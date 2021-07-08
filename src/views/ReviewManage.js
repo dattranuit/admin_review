@@ -21,23 +21,6 @@ function ReviewManage() {
       })
       .catch();
   }, [success]);
-  const searchSchool = (e) => {
-    e.preventDefault();
-    // Promise.all([
-    //   axios.get(`${apiLocal}/api/schools/filter?q=${refSearch.current.value}`),
-    // ])
-    //   .then(([school]) => {
-    //     const x = school.data.schools;
-    //     let arr = [];
-    //     if (school.data.schools !== []) {
-    //       data.filter((item) => {
-    //         if (item.idSchool.code === x[0].code) return arr.push(item);
-    //       });
-    //       setData(arr);
-    //     } else setData([]);
-    //   })
-    //   .catch();
-  };
   const listReport = () => {
     let arr = [];
     data.filter((item) => {
@@ -59,13 +42,6 @@ function ReviewManage() {
         Danh sách các bài đánh giá
       </h2>
       <div style={{ display: "flex" }}>
-        <form onSubmit={(e) => searchSchool(e)}>
-          <input
-            ref={refSearch}
-            placeholder="Tìm kiếm trường theo mã, tên"
-            style={{ width: "360px", height: "100%" }}
-          ></input>
-        </form>
         <button
           onClick={() => listReport()}
           className="btn btn-warning"
