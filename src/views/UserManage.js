@@ -9,7 +9,9 @@ import SweetAlert from "react-bootstrap-sweetalert";
 const UserManage = () => {
 
     const [listUser, setListUser] = useState([]);
+    const [userData, setUserData] = useState({});
     const [detailUser, setDetailUser] = useState({
+        _id: "",
         username: "",
         name: "",
         email: "",
@@ -26,6 +28,7 @@ const UserManage = () => {
     const handleCloseEdit = () => setShowEdit(false);
     const handleShowEdit = () => setShowEdit(true);
     const [stateUser, setStateUser] = useState(false);
+    const [userId, setUserId] = useState("");
 
     const warningWithConfirmMessage = () => {
         setAlertWarning(true);
@@ -34,6 +37,13 @@ const UserManage = () => {
     const successDelete = async () => {
         setAlertWarning(false);
         setConfirmAlert(true);
+        console.log(stateUser);
+        if(stateUser === true){
+            handleUnBan(userId);
+        }else{
+            handleBan(userId);
+        }
+        
     };
     const hideAlertWarn = () => {
         setAlertWarning(false);
@@ -42,12 +52,35 @@ const UserManage = () => {
         setConfirmAlert(false);
     }
 
+    const handleBan = async (idUser) =>{
+        console.log(userData);
+        const res = await axios.patch(`${apiLocal}/api/users/banned`, {
+            idAdmin:userData._id, 
+            idUser: idUser
+        });
+    }
+    const handleUnBan = async (idUser) =>{
+        const res = await axios.patch(`${apiLocal}/api/users/unbanned`, {
+            idAdmin:userData._id, 
+            idUser: idUser
+        });
+    }
 
+    const fetchMe = async () =>{
+        const res = await axios.get(`${apiLocal}/api/users/me`, {
+            headers: {
+                'x-access-token': localStorage.getItem('x-access-token')
+            }
+        });
+        if(res.data.username) {
+            setUserData(res.data);
+        }
+    }
     const fetchListUser = async () => {
         const res = await axios.get(`${apiLocal}/api/users`);
         let tmp = res.data.map((item, key) => {
             return {
-                id: item._id,
+                _id: item._id,
                 username: item.username,
                 name: item.name,
                 banned: item.banned === true ? "Banned" : "Active",
@@ -85,6 +118,7 @@ const UserManage = () => {
                                     username: obj.username,
                                     name: obj.name,
                                     email: obj.email,
+                                    _id: obj._id
                                     // avatar: obj.avatar,
                                     // permission: obj.permission === 1 ? "Admin" : "Member",
                                     // state: obj.banned === false ? "Active" : "Banned",
@@ -102,11 +136,14 @@ const UserManage = () => {
                         <Button
                             onClick={() => {
                                 let obj = res.data.find((o) => o._id === item._id);
+                                setUserId(obj._id)
                                 warningWithConfirmMessage();
                                 if(obj.banned === false){
                                     setStateUser(false);
+                                    //handleBan(obj._id);
                                 } else {
                                     setStateUser(true);
+                                    //handleUnBan(obj._id)
                                 }
                             }}
                             variant="danger"
@@ -124,18 +161,23 @@ const UserManage = () => {
     const UserEdit = ({ detailUser }) => {
 
         //const [username, setUserName] = useState("");
-        const [name, setName] = useState("");
-        const [email, setEmail] = useState("");
+        const [name, setName] = useState(detailUser.name);
+        const [email, setEmail] = useState(detailUser.email);
         const [password, setPassword] = useState("");
 
         const handleSubmit = async (e) => {
             e.preventDefault();
-            // const res = await axios.post(`${apiLocal}/api/users/register`,{
-            //     username: username,
-            //     email: email,
-            //     name: name,
-            //     password: password
-            // });
+            const res = await axios.post(`${apiLocal}/api/users/${detailUser._id}/updateuser`,{
+                email: email,
+                name: name,
+                password: password
+            });
+            if(res.data.code === 1){
+                notify(e, "tr", "success", "Chỉnh sửa người dùng thành công!")
+                
+            } else {
+                notify(e, "tr", "Waring", res.data.msg);
+            }
         }
 
         return (
@@ -178,7 +220,7 @@ const UserManage = () => {
                                                             <Form.Control
                                                                 name="required"
                                                                 type="text"
-                                                                value={detailUser.name}
+                                                                value={name}
                                                                 onChange={(e) => {
                                                                     setName(e.target.value)
                                                                 }}
@@ -196,7 +238,7 @@ const UserManage = () => {
                                                             <Form.Control
                                                                 name="url"
                                                                 type="email"
-                                                                value={detailUser.email}
+                                                                value={email}
                                                                 onChange={(e) => {
                                                                     setEmail(e.target.value);
                                                                 }}
@@ -242,6 +284,7 @@ const UserManage = () => {
     }
     useEffect(() => {
         fetchListUser();
+        fetchMe();
     }, [])
 
 

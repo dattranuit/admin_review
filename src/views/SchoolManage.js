@@ -24,7 +24,8 @@ const SchoolManage = () => {
     const [confirmAlert, setConfirmAlert] = useState(false);
     const [hide, setHide] = useState(true);
     const [showModal, setShowModal] = useState(false);
-
+    const [idSchool, setIdSchool] = useState("");
+    const [idSchooEdit, setIdSchoolEdit] = useState("");
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -42,12 +43,17 @@ const SchoolManage = () => {
     const successDelete = () => {
         setAlertWarning(false);
         setConfirmAlert(true);
+        handleDeleteSchool();
     };
     const hideAlertWarn = () => {
         setAlertWarning(false);
     };
     const hideConfirm = () => {
         setConfirmAlert(false);
+    }
+    const handleDeleteSchool = async () => {
+        console.log(idSchool);
+        const res = await axios.delete(`${apiLocal}/api/schools/${idSchool}`);
     }
 
     const fetchListSchool = async () => {
@@ -95,11 +101,11 @@ const SchoolManage = () => {
                         <Button
                             onClick={() => {
                                 let obj = res.data.find((o) => o._id === item._id);
-                                //console.log(obj)
+                                setIdSchoolEdit(obj._id);
                                 const convertType = ["Khác", "Công lập", "Dân lập", "Bán công"]
                                 const convertLevel = ["Khác", "Đại học", "Cao đẳng", "Trung cấp"]
                                 const majors = Array(7).fill(false);
-                                obj.typeOfMajor.map((item, index) =>{majors[item] = true})
+                                obj.typeOfMajor.map((item, index) => { majors[item] = true })
                                 setDetailSchool({
                                     name: obj.name,
                                     code: obj.code,
@@ -107,14 +113,14 @@ const SchoolManage = () => {
                                     location: obj.location,
                                     description: obj.description,
                                     gallery: obj.images,
-                                    levelEdu: {value: obj.level, label: convertLevel[obj.level] },
-                                    typeOfSchool: {value: obj.typeOfSchool, label: convertType[obj.typeOfSchool]},
+                                    levelEdu: { value: obj.level, label: convertLevel[obj.level] },
+                                    typeOfSchool: { value: obj.typeOfSchool, label: convertType[obj.typeOfSchool] },
                                     typeMajors: majors,
                                     website: obj.website
                                 });
                                 setShowEdit(true);
                                 //setShowModal(true);
-                               // handleClick();
+                                // handleClick();
                             }}
                             variant="warning"
                             size="sm"
@@ -126,6 +132,7 @@ const SchoolManage = () => {
                         <Button
                             onClick={() => {
                                 let obj = res.data.find((o) => o._id === item._id);
+                                setIdSchool(obj._id);
                                 warningWithConfirmMessage();
                             }}
                             variant="danger"
@@ -285,15 +292,15 @@ const SchoolManage = () => {
                     <Modal.Footer>
                     </Modal.Footer>
                 </Modal>
-            
+
             </>
         );
     }
 
     const SchoolModalEdit = ({ detailSchool }) => {
         //console.log(detailSchool)
-        const [logo, setLogo] = useState(detailSchool.logo);
-        const [gallery, setGallery] = useState(detailSchool.gallery);
+        const [logo, setLogo] = useState();
+        const [gallery, setGallery] = useState([]);
         const [name, setName] = useState(detailSchool.name);
         const [location, setLocation] = useState(detailSchool.location);
         const [website, setWebsite] = useState(detailSchool.website);
@@ -358,15 +365,15 @@ const SchoolManage = () => {
             gallery.map((item, index) => {
                 formData.append('gallery', item)
             })
-            const res = await axios.post(`${apiLocal}/api/schools`, formData, {
+            const res = await axios.post(`${apiLocal}/api/schools/${idSchooEdit}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
             if (res.status === 200) {
-                alert("Create school succesful");
-                liftUp();
-                clearAllFields();
+                alert("Edit school succesful");
+                //liftUp();
+                //clearAllFields();
             } else {
                 alert("Error");
             }
@@ -376,186 +383,191 @@ const SchoolManage = () => {
             <>
                 <Modal scrollable={true} size="xl" show={showEdit} onHide={handleCloseEdit}>
                     <Modal.Header closeButton>
+                        Chỉnh sửa trường
                     </Modal.Header>
                     <Modal.Body>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Tên trường
-                            </Form.Label>
-                            <Col sm="7">
-                                <Form.Group>
-                                    <Form.Control
-                                        name="required"
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => {
-                                            setName(e.target.value);
-                                        }}
-                                    ></Form.Control>
+                        <Container fluid>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Tên trường
+                                </Form.Label>
+                                <Col sm="7">
+                                    <Form.Group>
+                                        <Form.Control
+                                            name="required"
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => {
+                                                setName(e.target.value);
+                                            }}
+                                        ></Form.Control>
 
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Địa chỉ
-                            </Form.Label>
-                            <Col sm="7">
-                                <Form.Group>
-                                    <Form.Control
-                                        name="required"
-                                        type="text"
-                                        value={location}
-                                        onChange={(e) => {
-                                            setLocation(e.target.value)
-                                        }}
-                                    ></Form.Control>
-
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Website
-                            </Form.Label>
-                            <Col sm="4">
-                                <Form.Group>
-                                    <Form.Control
-                                        name="url"
-                                        type="text"
-                                        value={website}
-                                        onChange={(e) => {
-                                            setWebsite(e.target.value);
-                                        }}
-                                    ></Form.Control>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Mã trường
-                            </Form.Label>
-                            <Col sm="4">
-                                <Form.Group>
-                                    <Form.Control
-                                        name="code"
-                                        type="text"
-                                        value={code}
-                                        onChange={(e) => {
-                                            setCode(e.target.value);
-                                        }}
-                                    ></Form.Control>
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Thông tin trường
-                            </Form.Label>
-                            <Col sm="4">
-                                <Form.Group>
-                                    <Select
-                                        className="react-select primary"
-                                        classNamePrefix="react-select"
-                                        name="singleSelect1"
-                                        value={typeSchool}
-                                        defaultValue={typeSchool}
-                                        onChange={(value) => setTypeSchool(value)}
-                                        options={[
-                                            // {
-                                            //     value: "",
-                                            //     label: "Chon 1 gia tri",
-                                            //     isDisabled: true,
-                                            // },
-                                            { value: 0, label: "Khac" },
-                                            { value: 1, label: "Cong lap" },
-                                            { value: 2, label: "Dan lap" },
-                                            { value: 3, label: "Ban cong" },
-                                        ]}
-                                        placeholder="Loại trường"
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col sm="4">
-                                <Form.Group>
-                                    <Select
-                                        className="react-select primary"
-                                        classNamePrefix="react-select"
-                                        name="singleSelect2"
-                                        value={levelEdu}
-                                        defaultValue={levelEdu}
-                                        onChange={(value) => setLevelEdu(value)}
-                                        options={[
-                                            // {
-                                            //     value: "",
-                                            //     label: "Single Option",
-                                            //     isDisabled: true,
-                                            // },
-                                            { value: 0, label: "Khac" },
-                                            { value: 1, label: "Dai hoc" },
-                                            { value: 2, label: "Cao dang" },
-                                            { value: 3, label: "Trung cap" },
-                                        ]}
-                                        placeholder="Trình độ đào tạo"
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                            </Form.Label>
-                            {listMajors.map((item, index) => (
-                                <Col>
-                                    <Form.Group className="pull-left">
-                                        <Form.Check>
-                                            <Form.Check.Label>
-                                                <Form.Check.Input
-                                                    type="checkbox"
-                                                    checked={typeMajors[index]}
-                                                    onClick={() => handleCheck(index)}
-                                                ></Form.Check.Input>
-                                                <span className="form-check-sign"></span>
-                                                {item}
-                                            </Form.Check.Label>
-                                        </Form.Check>
                                     </Form.Group>
                                 </Col>
-                            ))}
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Logo
-                            </Form.Label>
-                            <Form.Group>
-                                {logo !== undefined ? <img style={{ width: 100, height: 100 }} src={logo} alt="logo" /> : null}
-                                <Form.File required id="logo" onChange={handleUploadLogo} />
-                            </Form.Group>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Ảnh
-                            </Form.Label>
-                            <Form.Group>
-                                {gallery.length > 0 ? gallery.map((item, index) => (
-                                    <div style={{ display: "inline-block" }}>
-                                        <img style={{ width: 100, height: 100, margin: 5 }} src={item} alt="image" />
-                                    </div>
-                                )) : null}
-                                <Form.File id="gallery" onChange={handleUploadGallery} />
-                            </Form.Group>
-                        </Row>
-                        <Row>
-                            <Form.Label column sm="2">
-                                Miêu tả
-                            </Form.Label>
-                            <FroalaEditor liftUp={handleEditor} defaultValue={detailSchool.description}/>
-                        </Row>
-                        <Row>
-                            <FroalaEditorView />
-                        </Row>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Địa chỉ
+                                </Form.Label>
+                                <Col sm="7">
+                                    <Form.Group>
+                                        <Form.Control
+                                            name="required"
+                                            type="text"
+                                            value={location}
+                                            onChange={(e) => {
+                                                setLocation(e.target.value)
+                                            }}
+                                        ></Form.Control>
 
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Website
+                                </Form.Label>
+                                <Col sm="4">
+                                    <Form.Group>
+                                        <Form.Control
+                                            name="url"
+                                            type="text"
+                                            value={website}
+                                            onChange={(e) => {
+                                                setWebsite(e.target.value);
+                                            }}
+                                        ></Form.Control>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Mã trường
+                                </Form.Label>
+                                <Col sm="4">
+                                    <Form.Group>
+                                        <Form.Control
+                                            name="code"
+                                            type="text"
+                                            value={code}
+                                            onChange={(e) => {
+                                                setCode(e.target.value);
+                                            }}
+                                        ></Form.Control>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Thông tin trường
+                                </Form.Label>
+                                <Col sm="4">
+                                    <Form.Group>
+                                        <Select
+                                            className="react-select primary"
+                                            classNamePrefix="react-select"
+                                            name="singleSelect1"
+                                            value={typeSchool}
+                                            defaultValue={typeSchool}
+                                            onChange={(value) => setTypeSchool(value)}
+                                            options={[
+                                                // {
+                                                //     value: "",
+                                                //     label: "Chon 1 gia tri",
+                                                //     isDisabled: true,
+                                                // },
+                                                { value: 0, label: "Khác" },
+                                                        { value: 1, label: "Công lập" },
+                                                        { value: 2, label: "Dân lập" },
+                                                        { value: 3, label: "Bán công" },
+                                            ]}
+                                            placeholder="Loại trường"
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col sm="4">
+                                    <Form.Group>
+                                        <Select
+                                            className="react-select primary"
+                                            classNamePrefix="react-select"
+                                            name="singleSelect2"
+                                            value={levelEdu}
+                                            defaultValue={levelEdu}
+                                            onChange={(value) => setLevelEdu(value)}
+                                            options={[
+                                                // {
+                                                //     value: "",
+                                                //     label: "Single Option",
+                                                //     isDisabled: true,
+                                                // },
+                                                { value: 0, label: "Khác" },
+                                                        { value: 1, label: "Đại học" },
+                                                        { value: 2, label: "Cao đẳng" },
+                                                        { value: 3, label: "Trung cấp" },
+                                            ]}
+                                            placeholder="Trình độ đào tạo"
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                </Form.Label>
+                                {listMajors.map((item, index) => (
+                                    <Col>
+                                        <Form.Group className="pull-left">
+                                            <Form.Check>
+                                                <Form.Check.Label>
+                                                    <Form.Check.Input
+                                                        type="checkbox"
+                                                        checked={typeMajors[index]}
+                                                        onClick={() => handleCheck(index)}
+                                                    ></Form.Check.Input>
+                                                    <span className="form-check-sign"></span>
+                                                    {item}
+                                                </Form.Check.Label>
+                                            </Form.Check>
+                                        </Form.Group>
+                                    </Col>
+                                ))}
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Logo
+                                </Form.Label>
+                                <Form.Group>
+                                    {logo !== undefined ? <img style={{ width: 100, height: 100 }} src={URL.createObjectURL(logo)} alt="logo" /> : null}
+                                    <Form.File required id="logo" onChange={handleUploadLogo} />
+                                </Form.Group>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Ảnh
+                                </Form.Label>
+                                <Form.Group>
+                                    {gallery.length > 0 ? gallery.map((item, index) => (
+                                        <div style={{ display: "inline-block" }}>
+                                            <img style={{ width: 100, height: 100, margin: 5 }} src={URL.createObjectURL(item)} alt="image" />
+                                        </div>
+                                    )) : null}
+                                    <Form.File id="gallery" onChange={handleUploadGallery} />
+                                </Form.Group>
+                            </Row>
+                            <Row>
+                                <Form.Label column sm="2">
+                                    Miêu tả
+                                </Form.Label>
+                                <FroalaEditor liftUp={handleEditor} defaultValue={detailSchool.description} />
+                            </Row>
+                            <Row>
+                                <FroalaEditorView />
+                            </Row>
+                        </Container>
                     </Modal.Body>
                     <Modal.Footer>
+                    <Button variant="info" onClick={handleSubmit}>
+                                                    Edit
+                                                </Button>
                     </Modal.Footer>
                 </Modal>
             </>
@@ -597,79 +609,79 @@ const SchoolManage = () => {
             >
                 School has been deleted.
             </SweetAlert>}
-            <SchoolModalEdit detailSchool= {detailSchool}/>
-            <SchoolModal detailSchool={detailSchool}/>
+            <SchoolModalEdit detailSchool={detailSchool} />
+            <SchoolModal detailSchool={detailSchool} />
             <Container fluid>
-            <Row>
-                <Col />
-                <Col />
-                <Col />
-                <Col>
-                    <Button
-                        style={{ float: "right", marginBottom: 10 }}
-                        className="btn-fill pull-right"
-                        type="submit"
-                        variant="info"
-                        onClick={() => setHide(!hide)}
-                    >
-                        Thêm trường
-                    </Button>
-                </Col>
-            </Row>
-            {hide === false ? <Row>
-                <Col md="12">
-                    <Card>
-                        <Card.Header>
-                        </Card.Header>
-                        <Card.Body>
-                            <School liftUp={handleLiftUp}></School>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row> : null}
-            <Row>
-                <Col md="12">
-                    <Card>
-                        <Card.Header>
-                        </Card.Header>
-                        <Card.Body>
-                            <ReactTable
-                                data={listSchool}
-                                columns={[
-                                    {
-                                        Header: "Mã trường",
-                                        accessor: "code",
-                                    },
-                                    {
-                                        Header: "Tên trường",
-                                        accessor: "name",
-                                    },
-                                    {
-                                        Header: "Vị trí",
-                                        accessor: "location",
-                                    },
-                                    {
-                                        Header: "Website",
-                                        accessor: "website",
-                                    },
-                                    {
-                                        Header: "Hành động",
-                                        accessor: "actions",
-                                        sortable: false,
-                                        filterable: false,
-                                    },
-                                ]}
-                                /*
-                                  You can choose between primary-pagination, info-pagination, success-pagination, warning-pagination, danger-pagination or none - which will make the pagination buttons gray
-                                */
-                                className="-striped -highlight primary-pagination"
-                            />
-                        </Card.Body>
-                    </Card>
+                <Row>
+                    <Col />
+                    <Col />
+                    <Col />
+                    <Col>
+                        <Button
+                            style={{ float: "right", marginBottom: 10 }}
+                            className="btn-fill pull-right"
+                            type="submit"
+                            variant="info"
+                            onClick={() => setHide(!hide)}
+                        >
+                            Thêm trường
+                        </Button>
+                    </Col>
+                </Row>
+                {hide === false ? <Row>
+                    <Col md="12">
+                        <Card>
+                            <Card.Header>
+                            </Card.Header>
+                            <Card.Body>
+                                <School liftUp={handleLiftUp}></School>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row> : null}
+                <Row>
+                    <Col md="12">
+                        <Card>
+                            <Card.Header>
+                            </Card.Header>
+                            <Card.Body>
+                                <ReactTable
+                                    data={listSchool}
+                                    columns={[
+                                        {
+                                            Header: "Mã trường",
+                                            accessor: "code",
+                                        },
+                                        {
+                                            Header: "Tên trường",
+                                            accessor: "name",
+                                        },
+                                        {
+                                            Header: "Vị trí",
+                                            accessor: "location",
+                                        },
+                                        {
+                                            Header: "Website",
+                                            accessor: "website",
+                                        },
+                                        {
+                                            Header: "Hành động",
+                                            accessor: "actions",
+                                            sortable: false,
+                                            filterable: false,
+                                        },
+                                    ]}
+                                    /*
+                                      You can choose between primary-pagination, info-pagination, success-pagination, warning-pagination, danger-pagination or none - which will make the pagination buttons gray
+                                    */
+                                    className="-striped -highlight primary-pagination"
+                                />
+                            </Card.Body>
+                        </Card>
 
-                </Col>
-            </Row>
-        </Container>
+                    </Col>
+                </Row>
+            </Container>
         </>
     );
 }
